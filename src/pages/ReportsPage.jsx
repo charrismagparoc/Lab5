@@ -4,12 +4,13 @@ import { ZONE_RECOMMENDATIONS, ZONE_RISK_DATA } from '../data/constants'
 
 const TYPE_COLORS = { Flood:'#5bc0eb', Fire:'#e84855', Earthquake:'#9b72cf', Landslide:'#f4a35a', Storm:'#f7c541' }
 const TYPES = ['Flood','Fire','Earthquake','Landslide','Storm']
+const SEV_CLS = { High:'bd-danger', Medium:'bd-warning', Low:'bd-info' }
+const STA_CLS = { Active:'bd-danger', Pending:'bd-warning', Verified:'bd-info', Responded:'bd-purple', Resolved:'bd-success' }
 
 function generateHTML(incidents, alerts, evacCenters, residents, resources) {
   const now = new Date().toLocaleString('en-PH',{dateStyle:'long',timeStyle:'short'})
   const totalCap = evacCenters.reduce((a,c) => a+(c.capacity||0), 0)
   const totalOcc = evacCenters.reduce((a,c) => a+(c.occupancy||0), 0)
-  const byType = TYPES.map(t => ({ type:t, count:incidents.filter(i=>i.type===t).length }))
 
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>IDRMS Situation Report</title>
 <style>
@@ -52,7 +53,7 @@ tr:nth-child(even) td{background:#fafbfc}
   <div class="sec-ttl">Executive Summary</div>
   <div class="stats">
     <div class="sbox"><div class="sval" style="color:#f4a35a">${incidents.length}</div><div class="slbl">Total Incidents</div></div>
-    <div class="sbox"><div class="sval" style="color:#e84855">${incidents.filter(i=>i.status==='Active').length}</div><div class="slbl">Active</div></div>
+    <div class="sbox"><div class="sval" style="color:#e84855">${incidents.filter(i=>i.status==='Active'||i.status==='Pending').length}</div><div class="slbl">Active/Pending</div></div>
     <div class="sbox"><div class="sval" style="color:#00d68f">${incidents.filter(i=>i.status==='Resolved').length}</div><div class="slbl">Resolved</div></div>
     <div class="sbox"><div class="sval" style="color:#5bc0eb">${residents.length}</div><div class="slbl">Residents</div></div>
     <div class="sbox"><div class="sval" style="color:#f4a35a">${totalOcc}/${totalCap}</div><div class="slbl">Evac Occupancy</div></div>
@@ -128,12 +129,15 @@ export default function ReportsPage() {
   const totalCap = evacCenters.reduce((a,c)=>a+(c.capacity||0),0)
   const totalOcc = evacCenters.reduce((a,c)=>a+(c.occupancy||0),0)
 
+  // Active + Pending incidents for live table
+  const activeIncidents = incidents.filter(i => i.status === 'Active' || i.status === 'Pending')
+
   return (
     <div>
       <div className="page-hdr">
         <div>
           <div className="page-title">Reports & Analytics</div>
-          <div className="page-sub">Generate situation reports and view statistics</div>
+          <div className="page-sub">Generate situation reports and view statistics — Barangay Kauswagan BDRRMC</div>
         </div>
         <div style={{ display:'flex', gap:8 }}>
           <button className="btn btn-secondary" onClick={handlePrint} type="button">
@@ -148,12 +152,12 @@ export default function ReportsPage() {
       {/* Summary cards */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))', gap:12, marginBottom:20 }}>
         {[
-          ['Total Incidents', incidents.length,                                             'var(--orange)','fa-triangle-exclamation'],
-          ['Active',          incidents.filter(i=>i.status==='Active'||i.status==='Pending').length,   'var(--red)',],
-          ['Resolved',        incidents.filter(i=>(i.status||'').toLowerCase()==='resolved').length, 'var(--green)',],
-          ['Total Residents', residents.length,                                             'var(--blue)',  'fa-users'],
-          ['Evac Occupancy',  `${totalOcc}/${totalCap}`,                                   'var(--yellow)','fa-house-flag'],
-          ['Alerts Sent',     alerts.length,                                               'var(--purple)','fa-bell'],
+          ['Total Incidents', incidents.length,                                                               'var(--orange)','fa-triangle-exclamation'],
+          ['Active/Pending',  incidents.filter(i=>i.status==='Active'||i.status==='Pending').length,         'var(--red)',   'fa-circle-radiation'],
+          ['Resolved',        incidents.filter(i=>i.status==='Resolved').length,                             'var(--green)', 'fa-circle-check'],
+          ['Total Residents', residents.length,                                                               'var(--blue)',  'fa-users'],
+          ['Evac Occupancy',  `${totalOcc}/${totalCap}`,                                                     'var(--yellow)','fa-house-flag'],
+          ['Alerts Sent',     alerts.length,                                                                  'var(--purple)','fa-bell'],
         ].map(([l,v,c,icon]) => (
           <div key={l} className="card" style={{ textAlign:'center' }}>
             <i className={'fa-solid ' + icon} style={{ color:c, fontSize:20, marginBottom:6, display:'block' }}></i>
@@ -161,6 +165,55 @@ export default function ReportsPage() {
             <div style={{ fontSize:11, color:'var(--t2)', marginTop:3 }}>{l}</div>
           </div>
         ))}
+      </div>
+
+      {/* ── LIVE ACTIVE INCIDENTS TABLE ── */}
+      <div className="card" style={{ marginBottom:14 }}>
+        <div className="sec-title">
+          <i className="fa-solid fa-circle-radiation" style={{ color:'var(--red)' }}></i> Live Active &amp; Pending Incidents
+          {activeIncidents.length > 0 && (
+            <span className="badge bd-danger" style={{ marginLeft:8 }}>{activeIncidents.length} ongoing</span>
+          )}
+        </div>
+        <div className="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Type</th><th>Zone / Location</th><th>Severity</th>
+                <th>Status</th><th>Reporter</th><th>Reported</th>
+              </tr>
+            </thead>
+            <tbody>
+              {activeIncidents.map(inc => (
+                <tr key={inc.id}>
+                  <td style={{ fontWeight:600 }}>{inc.type}</td>
+                  <td>
+                    <div style={{ fontWeight:600 }}>{inc.zone}</div>
+                    <div style={{ fontSize:11, color:'var(--t3)' }}>{inc.location || '—'}</div>
+                  </td>
+                  <td><span className={'badge ' + SEV_CLS[inc.severity]}>{inc.severity}</span></td>
+                  <td><span className={'badge ' + STA_CLS[inc.status]}>{inc.status}</span></td>
+                  <td style={{ fontSize:12.5 }}>{inc.reporter || '—'}</td>
+                  <td style={{ fontSize:11.5, color:'var(--t3)', whiteSpace:'nowrap' }}>
+                    {inc.dateReported
+                      ? new Date(inc.dateReported).toLocaleString('en-PH',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})
+                      : '—'}
+                  </td>
+                </tr>
+              ))}
+              {activeIncidents.length === 0 && (
+                <tr>
+                  <td colSpan={6}>
+                    <div className="empty" style={{ padding:20 }}>
+                      <i className="fa-solid fa-circle-check" style={{ color:'var(--green)' }}></i>
+                      <p>No active or pending incidents. All clear!</p>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14, marginBottom:14 }}>
