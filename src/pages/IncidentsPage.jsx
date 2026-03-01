@@ -40,8 +40,13 @@ export default function IncidentsPage() {
     setSaveErr('')
     setSaving(true)
     try {
-      if (isEditing && selected) await updateIncident(selected.id, form)
-      else await addIncident(form)
+      if (isEditing && selected) {
+        // Strip system/read-only fields that Supabase manages automatically
+        const { id, createdAt, createdat, created_at, dateReported, datereported, date_reported, updatedAt, updatedat, updated_at, ...safeForm } = form
+        await updateIncident(selected.id, safeForm)
+      } else {
+        await addIncident(form)
+      }
       setShowModal(false)
     } catch (e) { setSaveErr(e.message) }
     setSaving(false)

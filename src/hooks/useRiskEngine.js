@@ -11,6 +11,13 @@ const VULNERABILITY_WEIGHTS = {
   'Pregnant': 8, 'Infant': 7,
 }
 
+// How much each incident severity adds to the zone score
+const INCIDENT_SEVERITY_SCORE = {
+  'High':   20,
+  'Medium': 10,
+  'Low':    4,
+}
+
 function isRainySeason() {
   const month = new Date().getMonth() + 1
   return month >= 6 && month <= 11
@@ -26,7 +33,7 @@ export function scoreResident(resident, zoneIncidentCount = 0, weather = {}) {
   const members = parseInt(resident.householdMembers) || 1
   score += Math.min((members - 1) * 1.8, 12)
   score += Math.min(zoneIncidentCount * 6, 20)
-  if (weather.riskLevel === 'High')   score += 15
+  if (weather.riskLevel === 'High')        score += 15
   else if (weather.riskLevel === 'Medium') score += 7
   if (isRainySeason()) score += 8
   return Math.min(Math.max(Math.round(score), 0), 100)
@@ -40,26 +47,42 @@ export function getRiskLabel(score) {
 
 export function scoreZone(zoneName, residents, incidents, weather) {
   const zoneResidents = residents.filter(r => r.zone === zoneName)
-  const zoneIncidents = incidents.filter(i => i.zone === zoneName)
-  const activeInc     = zoneIncidents.filter(i => ['Active', 'Pending'].includes(i.status)).length
+  // Only count active/pending incidents — resolved ones reduce risk
+  const activeInc     = incidents.filter(i => i.zone === zoneName && ['Active', 'Pending', 'Verified', 'Responded'].includes(i.status))
   const baseScore     = ZONE_BASE_SCORE[zoneName] || 30
   const vulnCount     = zoneResidents.filter(r => (r.vulnerabilityTags || []).length > 0).length
   const unaccounted   = zoneResidents.filter(r => r.evacuationStatus === 'Unaccounted').length
 
   let score = baseScore
-  score += Math.min(activeInc * 8, 24)
+
+  // Add severity-weighted score for each active incident
+  const incidentScore = activeInc.reduce((acc, inc) => acc + (INCIDENT_SEVERITY_SCORE[inc.severity] || 6), 0)
+  score += Math.min(incidentScore, 30)
+
   score += Math.min(vulnCount * 1.5, 15)
   score += Math.min(unaccounted * 3, 12)
-  if (weather?.riskLevel === 'High')   score += 12
+  if (weather?.riskLevel === 'High')        score += 12
   else if (weather?.riskLevel === 'Medium') score += 5
   if (isRainySeason()) score += 6
   return Math.min(Math.max(Math.round(score), 0), 100)
 }
 
+// Count ALL incidents by severity (all statuses) for the Risk Intelligence KPI cards
+export function getIncidentRiskCounts(incidents) {
+  return {
+    highIncidents:   incidents.filter(i => i.severity === 'High').length,
+    mediumIncidents: incidents.filter(i => i.severity === 'Medium').length,
+    lowIncidents:    incidents.filter(i => i.severity === 'Low').length,
+    totalActive:     incidents.filter(i => ['Active', 'Pending', 'Verified', 'Responded'].includes(i.status)).length,
+  }
+}
+
 export function useRiskEngine(residents, incidents, weather) {
   const zoneIncidentCount = useMemo(() => {
     const counts = {}
-    incidents.forEach(i => { counts[i.zone] = (counts[i.zone] || 0) + 1 })
+    incidents
+      .filter(i => ['Active', 'Pending', 'Verified', 'Responded'].includes(i.status))
+      .forEach(i => { counts[i.zone] = (counts[i.zone] || 0) + 1 })
     return counts
   }, [incidents])
 
@@ -87,8 +110,12 @@ export function useRiskEngine(residents, incidents, weather) {
         vulnerableCount:  zoneRes.filter(r => (r.vulnerabilityTags || []).length > 0).length,
         evacuatedCount:   zoneRes.filter(r => r.evacuationStatus === 'Evacuated').length,
         unaccountedCount: zoneRes.filter(r => r.evacuationStatus === 'Unaccounted').length,
-        activeIncidents:  zoneInc.filter(i => ['Active', 'Pending'].includes(i.status)).length,
+        activeIncidents:  zoneInc.filter(i => ['Active', 'Pending', 'Verified', 'Responded'].includes(i.status)).length,
         totalIncidents:   zoneInc.length,
+        // Incident severity breakdown per zone
+        highIncidents:    zoneInc.filter(i => i.severity === 'High'   && ['Active','Pending','Verified','Responded'].includes(i.status)).length,
+        mediumIncidents:  zoneInc.filter(i => i.severity === 'Medium' && ['Active','Pending','Verified','Responded'].includes(i.status)).length,
+        lowIncidents:     zoneInc.filter(i => i.severity === 'Low'    && ['Active','Pending','Verified','Responded'].includes(i.status)).length,
       }
     }).sort((a, b) => b.computedScore - a.computedScore)
   , [residents, incidents, weather])
@@ -96,7 +123,8 @@ export function useRiskEngine(residents, incidents, weather) {
   const highCount    = residentRisks.filter(r => r.riskLabel === 'HIGH').length
   const mediumCount  = residentRisks.filter(r => r.riskLabel === 'MEDIUM').length
   const lowCount     = residentRisks.filter(r => r.riskLabel === 'LOW').length
-  const overallScore = Math.round(residentRisks.reduce((a, r) => a + r.score, 0) / Math.max(residentRisks.length, 1))
-
-  return { residentRisks, zoneRisks, highCount, mediumCount, lowCount, overallScore, isRainySeason: isRainySeason() }
-}
+  const overallScore = useMemo(() => {
+    const active = incidents.filter(i => ['Active','Pending','Verified','Responded'].includes(i.status))
+    const highAct = active.filter(i => i.severity === 'High').length
+    const medAct  = active.filter(i => i.severity === 'Medium').length
+    

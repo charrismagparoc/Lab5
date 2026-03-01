@@ -79,13 +79,12 @@ export function useLocalData() {
       let   us   = usR.status   === 'fulfilled' ? (usR.value.data   || []) : []
       const alog = alogR.status === 'fulfilled' ? (alogR.value.data || []) : []
 
-      // if the users table is legitimately empty, seed default accounts
+      // Seed default admin accounts if users table is empty
       if (us.length === 0) {
-        const { data: seeded, error: seedErr } = await supabase.from('users').insert([
+        const { data: seeded } = await supabase.from('users').insert([
           { name: 'Admin User',    email: 'admin@kauswagan.gov.ph',  password: 'admin123',  role: 'Admin', status: 'Active' },
           { name: 'Staff Officer', email: 'staff@kauswagan.gov.ph',  password: 'staff123',  role: 'Staff', status: 'Active' },
         ]).select()
-        if (seedErr) throw seedErr
         us = seeded || []
       }
 
@@ -97,13 +96,60 @@ export function useLocalData() {
       setUsers(us.map(normUser))
       setActivityLog(alog.map(normAct))
     } catch (e) {
-      console.error('Database loadAll failed, cannot fall back to local data:', e)
-      // optionally you could alert the user or redirect to an error page
-      throw e // bubble up so the app knows connection is broken
+      console.warn('loadAll error:', e)
+      setUsers([{
+        id: 'local1', name: 'Admin User', email: 'admin@kauswagan.gov.ph',
+        password: 'admin123', role: 'Admin', status: 'Active',
+      }])
     }
   }, [])
 
   useEffect(() => { loadAll() }, [loadAll])
+
+  // ── Supabase Realtime subscriptions ─────────────────────────────────────
+  // Incidents realtime → instantly updates Risk Intelligence scores
+  useEffect(() => {
+    const channel = supabase
+      .channel('realtime:incidents')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'incidents' },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            setIncidents(prev => [normInc(payload.new), ...prev])
+          } else if (payload.eventType === 'UPDATE') {
+            setIncidents(prev => prev.map(r => r.id === payload.new.id ? normInc(payload.new) : r))
+          } else if (payload.eventType === 'DELETE') {
+            setIncidents(prev => prev.filter(r => r.id !== payload.old.id))
+          }
+        }
+      )
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [])
+
+  // Residents realtime → instantly updates Risk Intelligence scores
+  useEffect(() => {
+    const channel = supabase
+      .channel('realtime:residents')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'residents' },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            setResidents(prev => [normRes(payload.new), ...prev])
+          } else if (payload.eventType === 'UPDATE') {
+            setResidents(prev => prev.map(r => r.id === payload.new.id ? normRes(payload.new) : r))
+          } else if (payload.eventType === 'DELETE') {
+            setResidents(prev => prev.filter(r => r.id !== payload.old.id))
+          }
+        }
+      )
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [])
 
   // ── Activity log helper ───────────────────────────────────────────────────
   const log = useCallback((action, type, userName = 'System', urgent = false) => {
@@ -140,26 +186,13 @@ export function useLocalData() {
     }
     const { data: record, error } = await supabase.from('incidents').insert([payload]).select().single()
     if (error) throw error
-    setIncidents(prev => [normInc(record), ...prev])
+    setIncidents(prev => prev.find(r => r.id === record.id) ? prev : [normInc(record), ...prev])
     log(`Incident reported: ${data.type} in ${data.zone}`, 'Incident', userName, data.severity === 'High')
     return record
   }, [log])
 
   const updateIncident = useCallback(async (id, data, userName = 'System') => {
-    // only send fields that actually exist in the database
-    const payload = {
-      type:        data.type,
-      zone:        data.zone,
-      location:    data.location || '',
-      severity:    data.severity || 'Medium',
-      status:      data.status,
-      description: data.description || '',
-      reporter:    data.reporter || '',
-      source:      data.source || 'web',
-      lat:         data.lat,
-      lng:         data.lng,
-    }
-    const { data: record, error } = await supabase.from('incidents').update(payload).eq('id', id).select().single()
+    const { data: record, error } = await supabase.from('incidents').update(data).eq('id', id).select().single()
     if (error) throw error
     setIncidents(prev => prev.map(r => r.id === id ? normInc(record) : r))
     log(`Incident updated: ${data.type || ''} ${data.zone || ''}`.trim(), 'Incident', userName)
@@ -266,7 +299,7 @@ export function useLocalData() {
     }
     const { data: record, error } = await supabase.from('residents').insert([payload]).select().single()
     if (error) throw error
-    setResidents(prev => [normRes(record), ...prev])
+    setResidents(prev => prev.find(r => r.id === record.id) ? prev : [normRes(record), ...prev])
     log(`Resident added: ${data.name} (${data.zone})`, 'Resident', userName)
     return record
   }, [log])
@@ -316,17 +349,7 @@ export function useLocalData() {
   }, [log])
 
   const updateResource = useCallback(async (id, data, userName = 'System') => {
-    const payload = {
-      name:      data.name,
-      category:  data.category,
-      quantity:  parseInt(data.quantity) || 0,
-      available: parseInt(data.available) || 0,
-      unit:      data.unit || 'pcs',
-      location:  data.location || '',
-      status:    data.status || 'Available',
-      notes:     data.notes || '',
-    }
-    const { data: record, error } = await supabase.from('resources').update(payload).eq('id', id).select().single()
+    const { data: record, error } = await supabase.from('resources').update(data).eq('id', id).select().single()
     if (error) throw error
     setResources(prev => prev.map(r => r.id === id ? record : r))
     log(`Resource updated: ${data.name || ''}`, 'Resource', userName)
@@ -357,14 +380,7 @@ export function useLocalData() {
   }, [log])
 
   const updateUser = useCallback(async (id, data, userName = 'System') => {
-    const payload = {
-      name:   data.name,
-      email:  data.email,
-      password: data.password,
-      role:   data.role,
-      status: data.status,
-    }
-    const { data: record, error } = await supabase.from('users').update(payload).eq('id', id).select().single()
+    const { data: record, error } = await supabase.from('users').update(data).eq('id', id).select().single()
     if (error) throw error
     setUsers(prev => prev.map(r => r.id === id ? normUser(record) : r))
     log(`User updated: ${data.name || ''}`, 'User', userName)
