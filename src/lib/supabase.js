@@ -10,3 +10,11 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 export const supabaseProblem = (!SUPABASE_URL || !SUPABASE_ANON_KEY)
   ? 'Supabase URL or anon key missing. Check your environment variables.'
   : null
+
+export async function checkDbConnection() {
+  if (supabaseProblem) throw new Error(supabaseProblem)
+  const { data, error } = await supabase.from('users').select('id').limit(1)
+  if (error) throw error
+  return true
+}
+
