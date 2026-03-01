@@ -1,7 +1,4 @@
-// ─── ActivityLogPage.jsx ──────────────────────────────────────────────────────
-// Full audit trail of all system actions loaded from Supabase activity_log table
-
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useApp } from '../context/AppContext'
 
 const TYPE_CLS = {
@@ -43,7 +40,7 @@ export default function ActivityLogPage() {
     const url = URL.createObjectURL(new Blob([rows], { type: 'text/csv' }))
     const a = document.createElement('a')
     a.href = url
-    a.download = `IDRMS_ActivityLog_${new Date().toISOString().slice(0, 10)}.csv`
+    a.download = `BDRRMC_ActivityLog_${new Date().toISOString().slice(0, 10)}.csv`
     a.click()
     URL.revokeObjectURL(url)
   }
@@ -61,12 +58,12 @@ export default function ActivityLogPage() {
       <div className="page-hdr">
         <div>
           <div className="page-title">Activity Log</div>
-          <div className="page-sub">Complete audit trail — {activityLog.length} records</div>
+          <div className="page-sub">Full system audit trail — Barangay Kauswagan BDRRMC · {activityLog.length} total records</div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn btn-secondary" onClick={handleRefresh} disabled={refreshing} type="button">
             <i className={'fa-solid ' + (refreshing ? 'fa-spinner fa-spin' : 'fa-rotate-right')}></i>
-            {refreshing ? ' Loading…' : ' Refresh'}
+            {refreshing ? ' Loading…' : ' Refresh Log'}
           </button>
           <button className="btn btn-secondary" onClick={handleExport} type="button">
             <i className="fa-solid fa-download"></i> Export CSV
@@ -80,7 +77,7 @@ export default function ActivityLogPage() {
           <i className="fa-solid fa-magnifying-glass"></i>
           <input
             className="form-ctrl search-inp"
-            placeholder="Search actions or users..."
+            placeholder="Search by action or user..."
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
@@ -88,7 +85,7 @@ export default function ActivityLogPage() {
         <select className="form-ctrl" style={{ width: 140 }} value={typeFilter} onChange={e => setTypeFilter(e.target.value)}>
           {types.map(t => <option key={t}>{t}</option>)}
         </select>
-        <span style={{ fontSize: 12, color: 'var(--t2)' }}>{filtered.length} records</span>
+        <span style={{ fontSize: 12, color: 'var(--t2)' }}>{filtered.length} records shown</span>
       </div>
 
       {refreshing && activityLog.length === 0 ? (
@@ -103,11 +100,11 @@ export default function ActivityLogPage() {
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>Action</th>
-                  <th>Type</th>
-                  <th>User</th>
+                  <th>Action Performed</th>
+                  <th>Category</th>
+                  <th>Performed By</th>
                   <th>Priority</th>
-                  <th>Timestamp</th>
+                  <th>Date & Time</th>
                 </tr>
               </thead>
               <tbody>
@@ -150,7 +147,7 @@ export default function ActivityLogPage() {
                     <td colSpan={6}>
                       <div className="empty">
                         <i className="fa-solid fa-clock-rotate-left"></i>
-                        <p>{activityLog.length === 0 ? 'No activity yet. Perform actions in the system and they will appear here.' : 'No records match your filter.'}</p>
+                        <p>{activityLog.length === 0 ? 'No activity recorded yet. Actions performed in the system will appear here.' : 'No records match your current filter.'}</p>
                       </div>
                     </td>
                   </tr>
