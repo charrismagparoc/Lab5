@@ -1,0 +1,41 @@
+/* ─── RISK INTELLIGENCE PAGE ─────────────────────────────────────────────── */
+.risk-gauge-wrap  { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.risk-gauge-ring  {
+  width: 100px; height: 100px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+.risk-gauge-val   { font-size: 26px; font-weight: 800; font-family: var(--disp); }
+.risk-gauge-lbl   { font-size: 11px; color: var(--t2); text-transform: uppercase; letter-spacing: .5px; }
+
+.risk-bar-wrap    { display: flex; align-items: center; gap: 10px; }
+.risk-bar-track   { flex: 1; height: 7px; background: var(--bg-el); border-radius: 4px; overflow: hidden; }
+.risk-bar-fill    { height: 100%; border-radius: 4px; transition: width .5s ease; }
+
+.risk-factor-row  { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 12.5px; }
+.risk-factor-lbl  { color: var(--t2); }
+.risk-factor-val  { font-weight: 700; }
+
+.zone-risk-card   { display: flex; flex-direction: column; gap: 11px; }
+.zone-risk-header { display: flex; align-items: center; justify-content: space-between; }
+.zone-risk-name   { font-size: 15px; font-weight: 800; }
+
+.ml-model-note {
+  background: rgba(155,114,207,.06);
+  border: 1px solid rgba(155,114,207,.2);
+  border-radius: 10px; padding: 12px 16px;
+  font-size: 12px; color: var(--t2); line-height: 1.8;
+  margin-bottom: 18px;
+}
+.ml-model-note strong { color: var(--purple); }
+
+.score-heatmap { display: grid; grid-template-columns: repeat(10,1fr); gap: 3px; margin: 8px 0; }
+.score-cell    { height: 22px; border-radius: 3px; opacity: .7; transition: opacity .15s; }
+.score-cell:hover { opacity: 1; }
+
+/* ─── ML MODEL NOTE ───────────────────────────────────────────────────────── */
+.ml-model-note {
+  background: rgba(91,192,235,.07); border: 1px solid rgba(91,192,235,.15);
+  border-radius: 10px; padding: 11px 14px;
+  font-size: 12px; color: var(--t2); line-height: 1.6; margin-bottom: 16px;
+}
