@@ -47,7 +47,6 @@ export default function Dashboard() {
       {/* Stats */}
       <div className="stats-grid">
         <StatCard icon="fa-triangle-exclamation" value={incidents.length}                                              label="Total Incidents"     cls="orange" />
-        <StatCard icon="fa-circle-radiation"     value={incidents.filter(i=>i.status==='Active').length}              label="Active Emergencies"  cls="red"    />
         <StatCard icon="fa-circle-check"         value={incidents.filter(i=>i.status==='Resolved').length}            label="Resolved"            cls="green"  />
         <StatCard icon="fa-person-walking"       value={residents.filter(r=>r.evacuationStatus==='Evacuated').length} label="Evacuated Residents" cls="blue"   />
         <StatCard icon="fa-users"                value={residents.length}                                             label="Total Residents"     cls="purple" />
