@@ -55,9 +55,7 @@ export default function ResidentsPage() {
           <div className="page-title">Resident Management</div>
           <div className="page-sub">Database with vulnerability tagging and evacuation tracking</div>
         </div>
-        <button className="btn btn-primary" onClick={openAdd} type="button">
-          <i className="fa-solid fa-user-plus"></i> Add Resident
-        </button>
+        
       </div>
 
       <div className="sum-pills">
