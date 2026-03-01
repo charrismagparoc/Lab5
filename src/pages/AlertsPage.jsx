@@ -1,9 +1,7 @@
-// ─── AlertsPage.jsx ───────────────────────────────────────────────────────────
-// Alert broadcasting with SMS delivery via Semaphore API (PH)
-
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { ConfirmModal } from '../components/Shared'
 import { useApp } from '../context/AppContext'
+import '../styles/pages/alerts.css'  // styles
 
 const ALL_ZONES  = ['All Zones','Zone 1','Zone 2','Zone 3','Zone 4','Zone 5','Zone 6']
 const LVL_COLOR  = { Danger:'var(--red)', Warning:'var(--orange)', Advisory:'var(--blue)', Resolved:'var(--green)' }
@@ -17,8 +15,7 @@ const QUICK = [
   { label:'All Clear',        zone:'All Zones', level:'Resolved', msg:'ALL CLEAR: The threat has passed. Residents may return home. Exercise caution with debris and damaged structures.' },
 ]
 
-// ── Semaphore SMS Gateway (PH) ─────────────────────────────────────────────
-// Get your API key at https://semaphore.co (free credits on signup)
+// Semaphore SMS Gateway
 const SEMAPHORE_API_KEY = import.meta.env.VITE_SEMAPHORE_KEY || ''
 const SENDER_NAME = 'BDRRMC'
 
@@ -47,19 +44,190 @@ function validatePH(num) {
   return /^(09|\+639)\d{9}$/.test(clean)
 }
 
-export default function AlertsPage() {
-  const { alerts, addAlert, deleteAlert } = useApp()
-  const [showModal, setShowModal] = useState(false)
-  const [form,      setForm]      = useState({ level:'Advisory', zone:'All Zones', message:'' })
-  const [phones,    setPhones]    = useState('')
-  const [sending,   setSending]   = useState(false)
-  const [smsStatus, setSmsStatus] = useState(null)
-  const [sent,      setSent]      = useState(false)
-  const [deleteId,  setDeleteId]  = useState(null)
-  const [sendErr,   setSendErr]   = useState('')
+// ── Resident Multi-Select Dropdown ────────────────────────────────────────────
+function ResidentSmsDropdown({ residents, selectedIds, onChange }) {
+  const [open, setOpen]     = useState(false)
+  const [search, setSearch] = useState('')
+  const ref                 = useRef(null)
 
-  const openModal = () => { setForm({ level:'Advisory', zone:'All Zones', message:'' }); setPhones(''); setSent(false); setSendErr(''); setSmsStatus(null); setShowModal(true) }
-  const openQuick = q  => { setForm({ level:q.level, zone:q.zone, message:q.msg }); setPhones(''); setSent(false); setSendErr(''); setSmsStatus(null); setShowModal(true) }
+  // Close on outside click
+  useEffect(() => {
+    const handler = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  // Only show residents that have a contact number
+  const eligible = residents.filter(r => r.contact && r.contact.trim())
+  const filtered = eligible.filter(r =>
+    r.name.toLowerCase().includes(search.toLowerCase()) ||
+    (r.zone || '').toLowerCase().includes(search.toLowerCase()) ||
+    (r.contact || '').includes(search)
+  )
+
+  const toggleResident = id => {
+    if (selectedIds.includes(id)) onChange(selectedIds.filter(x => x !== id))
+    else onChange([...selectedIds, id])
+  }
+
+  const toggleAll = () => {
+    if (selectedIds.length === eligible.length) onChange([])
+    else onChange(eligible.map(r => r.id))
+  }
+
+  const selectedResidents = residents.filter(r => selectedIds.includes(r.id))
+  const allSelected = eligible.length > 0 && selectedIds.length === eligible.length
+
+  return (
+    <div ref={ref} className="sms-dropdown-wrap">
+
+      {/* ── Trigger ── */}
+      <div className="form-ctrl sms-dropdown-trigger" onClick={() => setOpen(o => !o)}>
+        <div className="sms-trigger-chips">
+          {selectedResidents.length === 0 ? (
+            <span className="sms-trigger-placeholder">Select residents to receive SMS…</span>
+
+          ) : selectedResidents.length <= 3 ? (
+            selectedResidents.map(r => (
+              <span key={r.id} className="sms-chip">
+                {r.name}
+                <span
+                  className="sms-chip-remove"
+                  onClick={e => { e.stopPropagation(); toggleResident(r.id) }}
+                >✕</span>
+              </span>
+            ))
+
+          ) : (
+            <span className="sms-chip-count">{selectedResidents.length} residents selected</span>
+          )}
+        </div>
+        <i className={`fa-solid fa-chevron-${open ? 'up' : 'down'} sms-trigger-chevron`} />
+      </div>
+
+      {/* ── Dropdown panel ── */}
+      {open && (
+        <div className="sms-dropdown-panel">
+
+          {/* Search bar */}
+          <div className="sms-search-bar">
+            <div className="sms-search-inner">
+              <i className="fa-solid fa-magnifying-glass sms-search-icon" />
+              <input
+                autoFocus
+                className="form-ctrl sms-search-input"
+                placeholder="Search residents…"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                onClick={e => e.stopPropagation()}
+              />
+            </div>
+          </div>
+
+          {/* Select All row */}
+          {eligible.length > 0 && (
+            <div
+              className={`sms-select-all${allSelected ? ' all-selected' : ''}`}
+              onClick={e => { e.stopPropagation(); toggleAll() }}
+            >
+              <span className={`sms-checkbox${allSelected ? ' checked' : ''}`}>
+                {allSelected && <i className="fa-solid fa-check sms-checkbox-icon" />}
+              </span>
+              Select All ({eligible.length} with contact)
+            </div>
+          )}
+
+          {/* Resident list */}
+          <div className="sms-resident-list">
+            {filtered.length === 0 ? (
+              <div className="sms-empty-msg">
+                {eligible.length === 0
+                  ? 'No residents with contact numbers found.'
+                  : 'No residents match your search.'}
+              </div>
+            ) : (
+              filtered.map(r => {
+                const checked = selectedIds.includes(r.id)
+                return (
+                  <div
+                    key={r.id}
+                    className={`sms-resident-row${checked ? ' row-checked' : ''}`}
+                    onClick={e => { e.stopPropagation(); toggleResident(r.id) }}
+                  >
+                    {/* Checkbox */}
+                    <span className={`sms-checkbox${checked ? ' checked' : ''}`}>
+                      {checked && <i className="fa-solid fa-check sms-checkbox-icon" />}
+                    </span>
+
+                    {/* Avatar */}
+                    <span className={`sms-avatar${checked ? ' avatar-checked' : ''}`}>
+                      {r.name.charAt(0).toUpperCase()}
+                    </span>
+
+                    {/* Info */}
+                    <div className="sms-resident-info">
+                      <div className="sms-resident-name">{r.name}</div>
+                      <div className="sms-resident-sub">
+                        {r.zone} · <span className="sms-resident-contact">{r.contact}</span>
+                      </div>
+                    </div>
+
+                    {/* Status badge */}
+                    <span className={`badge ${{ Safe:'bd-success', Evacuated:'bd-info', Unaccounted:'bd-danger' }[r.evacuationStatus] || ''}`}>
+                      {r.evacuationStatus}
+                    </span>
+                  </div>
+                )
+              })
+            )}
+          </div>
+
+          {/* Footer */}
+          {selectedIds.length > 0 && (
+            <div className="sms-dropdown-footer">
+              <span className="sms-footer-count">
+                <i className="fa-solid fa-mobile-screen" />
+                {selectedIds.length} recipient{selectedIds.length !== 1 ? 's' : ''} selected
+              </span>
+              <button
+                className="sms-clear-all"
+                onClick={e => { e.stopPropagation(); onChange([]) }}
+                type="button"
+              >
+                Clear all
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Main Page ─────────────────────────────────────────────────────────────────
+export default function AlertsPage() {
+  const { alerts, addAlert, deleteAlert, residents = [] } = useApp()
+  const [showModal,      setShowModal]      = useState(false)
+  const [form,           setForm]           = useState({ level:'Advisory', zone:'All Zones', message:'' })
+  const [selectedResIds, setSelectedResIds] = useState([])
+  const [sending,        setSending]        = useState(false)
+  const [smsStatus,      setSmsStatus]      = useState(null)
+  const [sent,           setSent]           = useState(false)
+  const [deleteId,       setDeleteId]       = useState(null)
+  const [sendErr,        setSendErr]        = useState('')
+
+  const openModal = () => {
+    setForm({ level:'Advisory', zone:'All Zones', message:'' })
+    setSelectedResIds([])
+    setSent(false); setSendErr(''); setSmsStatus(null)
+    setShowModal(true)
+  }
+  const openQuick = q => {
+    setForm({ level:q.level, zone:q.zone, message:q.msg })
+    setSelectedResIds([])
+    setSent(false); setSendErr(''); setSmsStatus(null)
+    setShowModal(true)
+  }
 
   const handleSend = async () => {
     if (!form.message.trim()) { setSendErr('Message is required.'); return }
@@ -74,14 +242,17 @@ export default function AlertsPage() {
       return
     }
 
-    const numList = phones.split(',').map(n => n.trim()).filter(Boolean)
-    if (numList.length > 0) {
+    if (selectedResIds.length > 0) {
+      const selectedResidents = residents.filter(r => selectedResIds.includes(r.id))
+      const numList = selectedResidents.map(r => r.contact.trim()).filter(Boolean)
       const invalid = numList.filter(n => !validatePH(n))
+
       if (invalid.length > 0) {
-        setSendErr(`Invalid number format: ${invalid.join(', ')} — use 09XXXXXXXXX or +639XXXXXXXXX`)
+        setSendErr(`Invalid number format for some residents: ${invalid.join(', ')}`)
         setSending(false)
         return
       }
+
       if (!SEMAPHORE_API_KEY) {
         setSmsStatus('no-key')
       } else {
@@ -117,9 +288,9 @@ export default function AlertsPage() {
       {/* Stats */}
       <div className="alert-stats-grid">
         {[
-          ['Total Sent', alerts.length,                               'var(--blue)'],
-          ['Danger',     alerts.filter(a=>a.level==='Danger').length, 'var(--red)'],
-          ['Warning',    alerts.filter(a=>a.level==='Warning').length,'var(--orange)'],
+          ['Total Sent', alerts.length,                                'var(--blue)'],
+          ['Danger',     alerts.filter(a=>a.level==='Danger').length,  'var(--red)'],
+          ['Warning',    alerts.filter(a=>a.level==='Warning').length, 'var(--orange)'],
           ['Advisory',   alerts.filter(a=>a.level==='Advisory').length,'var(--blue)'],
         ].map(([l,v,c]) => (
           <div key={l} className="card alert-stat-card">
@@ -195,9 +366,9 @@ export default function AlertsPage() {
                 <i className="fa-solid fa-circle-check alert-sent-icon"></i>
                 <h3>Alert Broadcast!</h3>
                 <p>Sent to <strong>{form.zone}</strong></p>
-                {smsStatus === 'sent'    && <div className="sms-ok-pill"><i className="fa-solid fa-mobile-screen"></i> SMS delivered to {phones.split(',').filter(Boolean).length} number(s)</div>}
-                {smsStatus === 'failed'  && <div className="sms-fail-pill"><i className="fa-solid fa-triangle-exclamation"></i> SMS delivery failed — check Semaphore API key</div>}
-                {smsStatus === 'no-key'  && <div className="sms-demo-pill"><i className="fa-solid fa-info-circle"></i> Add VITE_SEMAPHORE_KEY to .env to enable real SMS</div>}
+                {smsStatus === 'sent'   && <div className="sms-ok-pill"><i className="fa-solid fa-mobile-screen"></i> SMS delivered to {selectedResIds.length} resident(s)</div>}
+                {smsStatus === 'failed' && <div className="sms-fail-pill"><i className="fa-solid fa-triangle-exclamation"></i> SMS delivery failed — check Semaphore API key</div>}
+                {smsStatus === 'no-key' && <div className="sms-demo-pill"><i className="fa-solid fa-info-circle"></i> Add VITE_SEMAPHORE_KEY to .env to enable real SMS</div>}
               </div>
             ) : (
               <div>
@@ -223,9 +394,13 @@ export default function AlertsPage() {
                       <i className="fa-solid fa-mobile-screen" style={{ color:'var(--blue)', marginRight:5 }}></i>
                       SMS Recipients <span style={{ color:'var(--t3)', fontWeight:400, textTransform:'none' }}>(optional)</span>
                     </label>
-                    <input className="form-ctrl" placeholder="09171234567, 09181234567, +639201234567" value={phones} onChange={e => setPhones(e.target.value)} />
+                    <ResidentSmsDropdown
+                      residents={residents}
+                      selectedIds={selectedResIds}
+                      onChange={setSelectedResIds}
+                    />
                     <div className="sms-hint">
-                      Enter Philippine mobile numbers separated by commas. Recipients will receive a real text message via Semaphore SMS gateway. Leave blank to skip SMS.
+                      Select residents with registered contact numbers. Only residents with a contact number are shown. Leave empty to skip SMS.
                     </div>
                   </div>
                 </div>
@@ -235,7 +410,7 @@ export default function AlertsPage() {
                   <button className="btn btn-primary" onClick={handleSend} disabled={sending} type="button">
                     {sending
                       ? <><i className="fa-solid fa-spinner fa-spin"></i> Sending...</>
-                      : <><i className="fa-solid fa-paper-plane"></i> Send Alert{phones.trim() ? ' + SMS' : ''}</>}
+                      : <><i className="fa-solid fa-paper-plane"></i> Send Alert{selectedResIds.length > 0 ? ` + SMS (${selectedResIds.length})` : ''}</>}
                   </button>
                 </div>
               </div>
