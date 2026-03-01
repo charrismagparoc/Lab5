@@ -79,12 +79,13 @@ export function useLocalData() {
       let   us   = usR.status   === 'fulfilled' ? (usR.value.data   || []) : []
       const alog = alogR.status === 'fulfilled' ? (alogR.value.data || []) : []
 
-      // Seed default admin accounts if users table is empty
+      // if the users table is legitimately empty, seed default accounts
       if (us.length === 0) {
-        const { data: seeded } = await supabase.from('users').insert([
+        const { data: seeded, error: seedErr } = await supabase.from('users').insert([
           { name: 'Admin User',    email: 'admin@kauswagan.gov.ph',  password: 'admin123',  role: 'Admin', status: 'Active' },
           { name: 'Staff Officer', email: 'staff@kauswagan.gov.ph',  password: 'staff123',  role: 'Staff', status: 'Active' },
         ]).select()
+        if (seedErr) throw seedErr
         us = seeded || []
       }
 
@@ -96,11 +97,9 @@ export function useLocalData() {
       setUsers(us.map(normUser))
       setActivityLog(alog.map(normAct))
     } catch (e) {
-      console.warn('loadAll error:', e)
-      setUsers([{
-        id: 'local1', name: 'Admin User', email: 'admin@kauswagan.gov.ph',
-        password: 'admin123', role: 'Admin', status: 'Active',
-      }])
+      console.error('Database loadAll failed, cannot fall back to local data:', e)
+      // optionally you could alert the user or redirect to an error page
+      throw e // bubble up so the app knows connection is broken
     }
   }, [])
 
@@ -147,7 +146,20 @@ export function useLocalData() {
   }, [log])
 
   const updateIncident = useCallback(async (id, data, userName = 'System') => {
-    const { data: record, error } = await supabase.from('incidents').update(data).eq('id', id).select().single()
+    // only send fields that actually exist in the database
+    const payload = {
+      type:        data.type,
+      zone:        data.zone,
+      location:    data.location || '',
+      severity:    data.severity || 'Medium',
+      status:      data.status,
+      description: data.description || '',
+      reporter:    data.reporter || '',
+      source:      data.source || 'web',
+      lat:         data.lat,
+      lng:         data.lng,
+    }
+    const { data: record, error } = await supabase.from('incidents').update(payload).eq('id', id).select().single()
     if (error) throw error
     setIncidents(prev => prev.map(r => r.id === id ? normInc(record) : r))
     log(`Incident updated: ${data.type || ''} ${data.zone || ''}`.trim(), 'Incident', userName)
@@ -304,7 +316,17 @@ export function useLocalData() {
   }, [log])
 
   const updateResource = useCallback(async (id, data, userName = 'System') => {
-    const { data: record, error } = await supabase.from('resources').update(data).eq('id', id).select().single()
+    const payload = {
+      name:      data.name,
+      category:  data.category,
+      quantity:  parseInt(data.quantity) || 0,
+      available: parseInt(data.available) || 0,
+      unit:      data.unit || 'pcs',
+      location:  data.location || '',
+      status:    data.status || 'Available',
+      notes:     data.notes || '',
+    }
+    const { data: record, error } = await supabase.from('resources').update(payload).eq('id', id).select().single()
     if (error) throw error
     setResources(prev => prev.map(r => r.id === id ? record : r))
     log(`Resource updated: ${data.name || ''}`, 'Resource', userName)
@@ -335,7 +357,14 @@ export function useLocalData() {
   }, [log])
 
   const updateUser = useCallback(async (id, data, userName = 'System') => {
-    const { data: record, error } = await supabase.from('users').update(data).eq('id', id).select().single()
+    const payload = {
+      name:   data.name,
+      email:  data.email,
+      password: data.password,
+      role:   data.role,
+      status: data.status,
+    }
+    const { data: record, error } = await supabase.from('users').update(payload).eq('id', id).select().single()
     if (error) throw error
     setUsers(prev => prev.map(r => r.id === id ? normUser(record) : r))
     log(`User updated: ${data.name || ''}`, 'User', userName)
