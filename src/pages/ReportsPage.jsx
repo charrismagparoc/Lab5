@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useApp } from '../context/AppContext'
-import { ZONE_RISK_DATA, ZONE_RECOMMENDATIONS } from '../data/constants'
+import { ZONE_RECOMMENDATIONS, ZONE_RISK_DATA } from '../data/constants'
 
 const TYPE_COLORS = { Flood:'#5bc0eb', Fire:'#e84855', Earthquake:'#9b72cf', Landslide:'#f4a35a', Storm:'#f7c541' }
 const TYPES = ['Flood','Fire','Earthquake','Landslide','Storm']
@@ -149,8 +149,8 @@ export default function ReportsPage() {
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))', gap:12, marginBottom:20 }}>
         {[
           ['Total Incidents', incidents.length,                                             'var(--orange)','fa-triangle-exclamation'],
-          ['Active',          incidents.filter(i=>i.status==='Active').length,              'var(--red)',   'fa-circle-radiation'],
-          ['Resolved',        incidents.filter(i=>i.status==='Resolved').length,            'var(--green)', 'fa-circle-check'],
+          ['Active',          incidents.filter(i=>i.status==='Active'||i.status==='Pending').length,   'var(--red)',],
+          ['Resolved',        incidents.filter(i=>(i.status||'').toLowerCase()==='resolved').length, 'var(--green)',],
           ['Total Residents', residents.length,                                             'var(--blue)',  'fa-users'],
           ['Evac Occupancy',  `${totalOcc}/${totalCap}`,                                   'var(--yellow)','fa-house-flag'],
           ['Alerts Sent',     alerts.length,                                               'var(--purple)','fa-bell'],

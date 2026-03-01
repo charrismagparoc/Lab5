@@ -1,12 +1,10 @@
 // ─── MapPage.jsx ──────────────────────────────────────────────────────────────
 // GIS Hazard Map — Barangay Kauswagan, CDO
-// Pins only appear when real data exists (residents / evac centers with lat/lng)
 
 import { useEffect, useRef, useState } from 'react'
 import { useApp } from '../context/AppContext'
 import { ZONE_FLOOD_RISK, ZONE_SUBDIVISIONS } from '../data/constants'
 
-// Centre of Barangay Kauswagan (the "KAUSWAGAN" label on OSM)
 const MAP_CENTER = [8.4942, 124.6447]
 const INC_COLOR  = { Flood:'#5bc0eb', Fire:'#e84855', Earthquake:'#9b72cf', Landslide:'#f4a35a', Storm:'#f7c541' }
 
@@ -29,9 +27,8 @@ export default function MapPage() {
   const dataLG  = useRef({})
   const labelLG = useRef(null)
 
-  const [filter,     setFilter]     = useState('all')
-  const [showPuroks, setShowPuroks] = useState(true)
-  const [showRings,  setShowRings]  = useState(true)
+  const [filter,    setFilter]    = useState('all')
+  const [showRings, setShowRings] = useState(true)
 
   const rebuildData = () => {
     if (!mapInst.current || !window.L) return
@@ -45,7 +42,7 @@ export default function MapPage() {
     const showInc  = filter === 'all' || filter === 'incidents'
     const showRes  = filter === 'all' || filter === 'residents'
 
-    // ── Evacuation centers — only if they have GPS coords ───────────────────
+    // ── Evacuation centers ───────────────────────────────────────────────────
     if (showEvac) {
       const lg = L.layerGroup().addTo(map)
       evacCenters.forEach(c => {
@@ -63,7 +60,7 @@ export default function MapPage() {
       dataLG.current.evacuation = lg
     }
 
-    // ── Incidents — only if they have GPS coords ─────────────────────────────
+    // ── Incidents ────────────────────────────────────────────────────────────
     if (showInc) {
       const lg = L.layerGroup().addTo(map)
       incidents.forEach(inc => {
@@ -81,7 +78,7 @@ export default function MapPage() {
       dataLG.current.incidents = lg
     }
 
-    // ── Residents — only those with actual GPS coords ────────────────────────
+    // ── Residents ────────────────────────────────────────────────────────────
     if (showRes) {
       const lg = L.layerGroup().addTo(map)
       const pinned = residents.filter(r => r.lat && r.lng)
@@ -125,24 +122,6 @@ export default function MapPage() {
       })
     }
 
-    if (showPuroks) {
-      Object.values(ZONE_SUBDIVISIONS).forEach(subs => {
-        subs.forEach(sub => {
-          L.marker([sub.lat, sub.lng], { icon: makeLbl(L, sub.name, 'sub-label'), interactive: false }).addTo(lg)
-        })
-      })
-      ;[
-        { name:'ZONE 1', lat:8.4953, lng:124.6413 },
-        { name:'ZONE 2', lat:8.4936, lng:124.6459 },
-        { name:'ZONE 3', lat:8.4912, lng:124.6512 },
-        { name:'ZONE 4', lat:8.4896, lng:124.6476 },
-        { name:'ZONE 5', lat:8.4874, lng:124.6448 },
-        { name:'ZONE 6', lat:8.4860, lng:124.6503 },
-      ].forEach(z => {
-        L.marker([z.lat, z.lng], { icon: makeLbl(L, z.name, 'zone-label'), interactive: false }).addTo(lg)
-      })
-    }
-
     labelLG.current = lg
   }
 
@@ -160,7 +139,6 @@ export default function MapPage() {
         attribution: '© OpenStreetMap contributors', maxZoom: 19,
       }).addTo(map)
 
-      // Barangay Hall marker
       L.marker(MAP_CENTER, {
         icon: L.divIcon({
           className: '',
@@ -185,7 +163,7 @@ export default function MapPage() {
   }, []) // eslint-disable-line
 
   useEffect(() => { rebuildData() }, [evacCenters, incidents, residents, filter]) // eslint-disable-line
-  useEffect(() => { rebuildLabels() }, [showPuroks, showRings]) // eslint-disable-line
+  useEffect(() => { rebuildLabels() }, [showRings]) // eslint-disable-line
 
   const activeInc   = incidents.filter(i => ['Active','Pending'].includes(i.status)).length
   const openCenters = evacCenters.filter(c => c.status === 'Open').length
@@ -225,10 +203,6 @@ export default function MapPage() {
             ))}
           </div>
           <div className="map-ctrl-row map-ctrl-checks">
-            <label className="map-check-lbl">
-              <input type="checkbox" checked={showPuroks} onChange={e => setShowPuroks(e.target.checked)} />
-              Purok Labels
-            </label>
             <label className="map-check-lbl">
               <input type="checkbox" checked={showRings} onChange={e => setShowRings(e.target.checked)} />
               Risk Rings
