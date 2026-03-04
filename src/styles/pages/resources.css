@@ -1,0 +1,17 @@
+/* ─── RESOURCES PAGE ──────────────────────────────────────────────────────── */
+
+.resources-page {
+  /* placeholder */
+}
+
+/* Availability bar — used inside the resources table */
+/* .res-bar-wrap, .res-track, .res-fill defined in layout/app.css */
+
+/* Category filter button row */
+.resources-filter-row {
+  display: flex;
+  gap: 7px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  align-items: center;
+}

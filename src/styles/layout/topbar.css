@@ -1,0 +1,126 @@
+/* ─── TOPBAR ─────────────────────────────────────────────────────────────── */
+.topbar {
+  height: 56px; background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px; flex-shrink: 0; z-index: 50; position: relative;
+}
+.t-left  { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+.t-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+
+.t-page-name { font-size: 13.5px; font-weight: 700; color: var(--t1); white-space: nowrap; }
+.t-crumb     { display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--t2); }
+
+.t-clock { display: flex; flex-direction: column; align-items: flex-end; margin-right: 2px; }
+.t-date  { font-size: 10.5px; font-weight: 600; color: var(--t1); }
+.t-time  { font-size: 10.5px; color: var(--t2); font-variant-numeric: tabular-nums; }
+
+.t-weather {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 10px; background: var(--bg-inp);
+  border: 1px solid var(--border); border-radius: 8px; font-size: 12px;
+}
+.t-weather span   { color: var(--t2); }
+.t-weather strong { color: var(--t1); }
+
+/* ─── RISK / SUNNY CHIPS ─────────────────────────────────────────────────── */
+.risk-chip {
+  padding: 2px 8px; border-radius: 20px;
+  font-size: 10px; font-weight: 800; letter-spacing: .4px; text-transform: uppercase;
+}
+.risk-low    { background: rgba(0,214,143,.1); color: var(--green); border: 1px solid rgba(0,214,143,.2); }
+.risk-medium { background: rgba(244,163,90,.1); color: var(--orange); border: 1px solid rgba(244,163,90,.2); }
+.risk-high   { background: rgba(232,72,85,.1); color: var(--red); border: 1px solid rgba(232,72,85,.2); animation: blink 1.8s infinite; }
+
+.sunny-chip {
+  display: flex; align-items: center; gap: 5px;
+  background: linear-gradient(90deg, #fff6c8, #ffe57c);
+  border-radius: 20px; padding: 3px 10px;
+  font-size: 11px; font-weight: 800; color: #5c3d00;
+}
+
+/* ─── NOTIFICATION BADGE ─────────────────────────────────────────────────── */
+.notif-badge {
+  position: absolute; top: -3px; right: -3px;
+  background: var(--red); color: #fff; font-size: 9px;
+  font-weight: 800; border-radius: 10px; padding: 1px 4px;
+  min-width: 15px; text-align: center; border: 2px solid var(--bg-card);
+}
+
+/* ─── PROFILE BUTTON ─────────────────────────────────────────────────────── */
+.profile-btn {
+  display: flex; align-items: center; gap: 7px;
+  padding: 4px 9px 4px 4px; border-radius: 9px;
+  background: var(--bg-inp); border: 1px solid var(--border);
+  cursor: pointer; transition: all .15s;
+}
+.profile-btn:hover { background: var(--bg-el); border-color: var(--blue); }
+.p-avatar {
+  width: 28px; height: 28px; border-radius: 7px;
+  background: linear-gradient(135deg, var(--blue), #3a91b8);
+  color: #fff; display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 12px; flex-shrink: 0;
+}
+
+/* ─── PROFILE INFO (continued) ───────────────────────────────────────────── */
+.p-info  { text-align: left; }
+.p-name  { font-size: 12.5px; font-weight: 700; color: var(--t1); }
+.p-role  { font-size: 10.5px; color: var(--blue); }
+.p-chevron { font-size: 9px; opacity: .5; margin-left: 4px; }
+
+/* ─── DROPDOWNS ──────────────────────────────────────────────────────────── */
+.t-notif-wrap   { position: relative; }
+.t-profile-wrap { position: relative; }
+.t-overlay { position: fixed; inset: 0; z-index: 999; }
+
+.t-dropdown {
+  position: absolute; right: 0; top: 42px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 12px; z-index: 1000;
+  box-shadow: var(--shadow); overflow: hidden;
+}
+.notif-dropdown   { width: 300px; }
+.profile-dropdown { width: 210px; }
+
+.t-dropdown-hdr {
+  padding: 12px 14px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.t-dropdown-hdr strong { font-size: 13px; }
+
+.notif-item {
+  display: flex; gap: 9px; padding: 10px 14px;
+  border-bottom: 1px solid var(--border); align-items: flex-start;
+}
+.notif-dot   { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+.notif-level { font-size: 11px; font-weight: 700; text-transform: uppercase; }
+.notif-msg   { font-size: 12.5px; color: var(--t1); line-height: 1.5; }
+.notif-zone  { font-size: 10.5px; color: var(--t3); margin-top: 2px; }
+
+.profile-hdr { flex-direction: column; align-items: flex-start; gap: 2px; }
+.profile-hdr strong { font-size: 13px; }
+.profile-hdr span   { font-size: 11px; color: var(--t3); }
+
+.t-dropdown-body { padding: 5px 6px; }
+.t-menu-btn {
+  width: 100%; display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px; border-radius: 8px; background: none; border: none;
+  color: var(--t2); font-size: 13px; cursor: pointer; font-family: inherit;
+  transition: background .12s;
+}
+.t-menu-btn:hover { background: var(--bg-el); color: var(--t1); }
+.t-menu-btn-danger { color: var(--red); }
+.t-menu-btn-danger:hover { background: rgba(232,72,85,.08); }
+.t-divider { height: 1px; background: var(--border); margin: 4px 6px; }
+
+/* ─── SETTINGS MODAL ─────────────────────────────────────────────────────── */
+.settings-section-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--t3); margin-bottom: 10px; }
+.settings-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
+.settings-row strong { font-size: 13px; }
+.settings-row-sub  { font-size: 11px; color: var(--t3); margin-top: 2px; }
+.settings-info-row { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--t2); }
+.settings-info-val { color: var(--green); font-weight: 600; }
+
+/* ─── HUMIDITY ────────────────────────────────────────────────────────────── */
+.t-humidity { color: var(--t3) !important; font-size: 10px; }
+.t-crumb-icon { font-size: 9px; opacity: .3; }

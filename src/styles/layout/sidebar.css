@@ -1,0 +1,55 @@
+/* ─── SIDEBAR ────────────────────────────────────────────────────────────── */
+.sidebar {
+  width: 240px; background: var(--bg-card);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  height: 100vh; flex-shrink: 0; overflow-y: auto;
+}
+.sidebar::-webkit-scrollbar { width: 0; }
+
+.s-head {
+  padding: 16px 14px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+}
+.s-logo {
+  width: 38px; height: 38px; border-radius: 9px;
+  background: linear-gradient(135deg, var(--red), #c62833);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; color: #fff;
+  box-shadow: 0 4px 12px rgba(232,72,85,.4); flex-shrink: 0;
+}
+.s-name     { font-family: var(--disp); font-size: 15px; font-weight: 800; color: var(--t1); letter-spacing: .5px; line-height: 1; }
+.s-sub      { font-size: 9px; color: var(--t3); text-transform: uppercase; letter-spacing: 1.5px; margin-top: 3px; }
+
+.s-section     { padding: 8px 10px 2px; }
+.s-section-lbl { font-size: 9.5px; font-weight: 700; color: var(--t3); text-transform: uppercase; letter-spacing: 1px; padding: 0 8px 6px; }
+
+.nav-btn {
+  width: 100%; display: flex; align-items: center; gap: 9px;
+  padding: 7px 9px; border-radius: 9px; background: transparent;
+  border: 1px solid transparent; cursor: pointer; color: var(--t2);
+  font-size: 13px; font-weight: 500; text-align: left;
+  font-family: var(--font); transition: background .12s, color .12s;
+  margin-bottom: 1px;
+}
+.nav-btn:hover  { background: var(--bg-el); color: var(--t1); }
+.nav-btn.active {
+  background: rgba(91,192,235,.1); color: var(--blue);
+  font-weight: 700; border-color: rgba(91,192,235,.18);
+}
+.nav-ico {
+  width: 28px; height: 28px; border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; color: #fff; flex-shrink: 0;
+}
+.nav-lbl { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.s-foot {
+  margin-top: auto; padding: 13px 15px;
+  border-top: 1px solid var(--border); flex-shrink: 0;
+}
+.s-user-name { font-size: 13px; font-weight: 700; color: var(--t1); }
+.s-user-role { font-size: 11px; color: var(--blue); margin-top: 1px; }
+.s-db-ok     { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--green); margin-top: 7px; }
+.s-dot       { width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; animation: pulse 2s infinite; }
+.s-foot-label { font-size: 10px; color: var(--t3); margin-bottom: 3px; }
