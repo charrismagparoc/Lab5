@@ -1,0 +1,45 @@
+/* ─── BUTTONS ────────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 7px; padding: 9px 16px; border-radius: var(--radius);
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: all .15s; border: 1px solid transparent;
+  white-space: nowrap; font-family: var(--font);
+}
+.btn-sm  { padding: 6px 11px; font-size: 12px; border-radius: 8px; }
+.btn-xs  { padding: 4px 8px;  font-size: 11px; border-radius: 6px; }
+
+.btn-primary  { background: linear-gradient(135deg, var(--blue), #3a91b8); color: #fff; }
+.btn-primary:hover  { opacity: .9; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(91,192,235,.3); }
+.btn-primary:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+.btn-secondary { background: var(--bg-el); color: var(--t1); border-color: var(--border); }
+.btn-secondary:hover { border-color: var(--blue); color: var(--blue); }
+
+.btn-danger   { background: rgba(232,72,85,.1); color: var(--red); border-color: rgba(232,72,85,.25); }
+.btn-danger:hover { background: rgba(232,72,85,.2); }
+
+.btn-success  { background: rgba(0,214,143,.1); color: var(--green); border-color: rgba(0,214,143,.25); }
+.btn-success:hover { background: rgba(0,214,143,.2); }
+
+.btn-warning  { background: rgba(244,163,90,.1); color: var(--orange); border-color: rgba(244,163,90,.25); }
+.btn-warning:hover { background: rgba(244,163,90,.2); }
+
+.btn-ghost    { background: transparent; color: var(--t2); border-color: transparent; }
+.btn-ghost:hover { background: var(--bg-el); color: var(--t1); }
+
+.icon-btn {
+  width: 34px; height: 34px; border-radius: 8px;
+  background: var(--bg-inp); border: 1px solid var(--border);
+  color: var(--t2); display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all .15s; position: relative;
+  font-size: 13px; flex-shrink: 0;
+}
+.icon-btn:hover { background: var(--bg-el); color: var(--t1); border-color: var(--blue); }
+
+/* ─── OUTLINE BUTTON ─────────────────────────────────────────────────────── */
+.btn-outline { background: transparent; color: var(--blue); border-color: rgba(91,192,235,.3); }
+.btn-outline:hover { background: rgba(91,192,235,.08); border-color: rgba(91,192,235,.5); }
+
+/* ─── PURPLE BADGE ───────────────────────────────────────────────────────── */
+.bd-purple { background: rgba(155,114,207,.12); color: var(--purple); }

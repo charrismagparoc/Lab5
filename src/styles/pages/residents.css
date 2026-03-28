@@ -1,0 +1,275 @@
+
+
+/* 1. Dropdown trigger wrapper — panel flows inline, pushes modal content down */
+.sms-dropdown-wrap {
+  position: static;
+}
+
+/* 2. Dropdown trigger (the visible "select box")*/
+.sms-dropdown-trigger {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 40px;
+  user-select: none;
+  padding: 8px 12px;
+}
+
+/* 3. Chips area inside the trigger */
+.sms-trigger-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  flex: 1;
+}
+
+.sms-trigger-placeholder {
+  color: var(--t3);
+  font-size: 13px;
+}
+
+/* Individual resident chip */
+.sms-chip {
+  background: rgba(59, 130, 246, 0.18);
+  color: var(--blue);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 5px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.sms-chip-remove {
+  cursor: pointer;
+  opacity: 0.7;
+  font-size: 10px;
+}
+
+.sms-chip-remove:hover {
+  opacity: 1;
+}
+
+/* Bulk count chip */
+.sms-chip-count {
+  background: rgba(59, 130, 246, 0.18);
+  color: var(--blue);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 5px;
+  padding: 2px 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Chevron icon inside trigger */
+.sms-trigger-chevron {
+  color: var(--t3);
+  font-size: 11px;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+/* 4. Dropdown panel — opens downward, modal scrolls to show Send Alert */
+.sms-dropdown-panel {
+  position: relative; /* ← changed from absolute: now pushes content down instead of overlapping */
+  top: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  z-index: 9999;
+  max-height: 220px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin-top: 4px; /* small gap between trigger and panel */
+}
+
+/* 5. Search bar inside panel */
+.sms-search-bar {
+  padding: 10px 10px 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sms-search-inner {
+  position: relative;
+}
+
+.sms-search-icon {
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--t3);
+  font-size: 12px;
+  pointer-events: none;
+}
+
+.sms-search-input {
+  padding-left: 28px !important;
+  height: 32px !important;
+  font-size: 12px !important;
+}
+
+/* 6. "Select All" row */
+.sms-select-all {
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--t2);
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: transparent;
+  transition: background 0.12s;
+}
+
+.sms-select-all:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.sms-select-all.all-selected {
+  background: rgba(59, 130, 246, 0.06);
+}
+
+/*7. Checkbox square */
+.sms-checkbox {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 2px solid var(--border);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: border-color 0.12s, background 0.12s;
+}
+
+.sms-checkbox.checked {
+  border-color: var(--blue);
+  background: var(--blue);
+}
+
+.sms-checkbox-icon {
+  font-size: 9px;
+  color: #fff;
+}
+
+/* 8. Resident list */
+.sms-resident-list {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.sms-empty-msg {
+  padding: 18px 14px;
+  color: var(--t3);
+  font-size: 12px;
+  text-align: center;
+}
+
+/* 9. Individual resident row */
+.sms-resident-row {
+  padding: 9px 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background 0.12s;
+}
+
+.sms-resident-row:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.sms-resident-row.row-checked {
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.sms-resident-row.row-checked:hover {
+  background: rgba(59, 130, 246, 0.12);
+}
+
+/* Avatar circle */
+.sms-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--t2);
+  flex-shrink: 0;
+  transition: background 0.12s, color 0.12s;
+}
+
+.sms-avatar.avatar-checked {
+  background: var(--blue);
+  color: #fff;
+}
+
+/* Name + contact info */
+.sms-resident-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.sms-resident-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--t1);
+  line-height: 1.2;
+}
+
+.sms-resident-sub {
+  font-size: 11px;
+  color: var(--t3);
+  margin-top: 1px;
+}
+
+.sms-resident-contact {
+  font-family: monospace;
+}
+
+/* 10. Dropdown footer */
+.sms-dropdown-footer {
+  padding: 8px 14px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--blue);
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sms-footer-count i {
+  margin-right: 6px;
+}
+
+.sms-clear-all {
+  color: var(--t3);
+  font-weight: 400;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-size: 12px;
+  padding: 0;
+}
+
+.sms-clear-all:hover {
+  color: var(--t1);
+}

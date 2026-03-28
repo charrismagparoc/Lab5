@@ -1,0 +1,12 @@
+/* ─── DASHBOARD PAGE ──────────────────────────────────────────────────────── */
+
+/* No page-specific overrides needed — Dashboard uses shared utility classes:
+   .stats-grid, .dash-row, .dash-bot, .dash-right-col (all in layout/app.css)
+   .stat-card, .card, .badge (all in components/cards.css)
+   .inc-row, .zone-row, .weather-main, .w-stats (all in layout/app.css)
+   .trend-bars, .type-bar-row, .activity-item (all in layout/app.css)
+   Add any dashboard-specific overrides below as needed. */
+
+.dashboard-page {
+  /* placeholder for future page-specific styles */
+}

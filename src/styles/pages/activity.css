@@ -1,0 +1,8 @@
+/* ─── ACTIVITY LOG PAGE ───────────────────────────────────────────────────── */
+
+.activity-page {
+  /* placeholder */
+}
+
+/* Activity log table helpers are defined in components/tables.css:
+   .log-mono, .log-action, .log-user, .log-avatar, .log-normal, .log-time */

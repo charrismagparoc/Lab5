@@ -1,0 +1,35 @@
+/* ═══════════════════════════════════════════════════════════════
+   IDRMS v3 — Master Stylesheet
+   All CSS is split into focused files and imported here.
+   Fonts are loaded in index.html via Google Fonts.
+═══════════════════════════════════════════════════════════════ */
+
+/* ─── Base ─────────────────────────────────────────────────── */
+@import './base/reset.css';
+@import './base/variables.css';
+@import './base/typography.css';
+
+/* ─── Layout ───────────────────────────────────────────────── */
+@import './layout/app.css';
+@import './layout/sidebar.css';
+@import './layout/topbar.css';
+
+/* ─── Components ───────────────────────────────────────────── */
+@import './components/buttons.css';
+@import './components/cards.css';
+@import './components/forms.css';
+@import './components/tables.css';
+
+/* ─── Pages ────────────────────────────────────────────────── */
+@import './pages/login.css';
+@import './pages/dashboard.css';
+@import './pages/map.css';
+@import './pages/incidents.css';
+@import './pages/alerts.css';
+@import './pages/evacuation.css';
+@import './pages/residents.css';
+@import './pages/resources.css';
+@import './pages/reports.css';
+@import './pages/risk.css';
+@import './pages/users.css';
+@import './pages/activity.css';

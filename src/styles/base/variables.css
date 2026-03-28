@@ -1,0 +1,46 @@
+/* ─── DESIGN TOKENS ──────────────────────────────────────────────────────── */
+:root {
+  /* Dark theme (default) */
+  --bg:       #0c1120;
+  --bg-card:  #131d30;
+  --bg-el:    #192540;
+  --bg-inp:   #0e1726;
+  --border:   rgba(255,255,255,.07);
+
+  --t1:  #e2e8f4;
+  --t2:  #7e8ea6;
+  --t3:  #4a586e;
+
+  --blue:   #5bc0eb;
+  --red:    #e84855;
+  --orange: #f4a35a;
+  --yellow: #f7c541;
+  --green:  #00d68f;
+  --purple: #9b72cf;
+
+  --font: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+  --disp: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+
+  --radius:    10px;
+  --radius-lg: 14px;
+  --shadow:    0 8px 24px rgba(0,0,0,.35);
+}
+
+/* Light theme overrides */
+:root[data-theme="light"] {
+  --bg:       #f0f4fa;
+  --bg-card:  #ffffff;
+  --bg-el:    #e8eef8;
+  --bg-inp:   #f5f7fc;
+  --border:   rgba(0,0,0,.08);
+
+  --t1:  #1a2236;
+  --t2:  #546176;
+  --t3:  #8a96a8;
+
+  --blue:   #1e8bb8;
+  --green:  #00a870;
+  --orange: #d4831a;
+  --yellow: #c4970e;
+  --shadow: 0 4px 16px rgba(0,0,0,.1);
+}

@@ -1,0 +1,36 @@
+/* ─── EVACUATION CENTERS PAGE ────────────────────────────────────────────── */
+
+.evacuation-page {
+  /* placeholder */
+}
+
+/* Evac center card grid */
+.evac-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+/* Capacity bar — shared alias used by evac cards */
+/* .cap-track and .cap-fill are defined in components/cards.css */
+
+/* Evac stats row */
+.evac-stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.evac-stat-val {
+  font-size: 30px;
+  font-weight: 800;
+  font-family: var(--disp);
+  line-height: 1;
+}
+
+.evac-stat-lbl {
+  font-size: 12px;
+  color: var(--t2);
+  margin-top: 4px;
+}

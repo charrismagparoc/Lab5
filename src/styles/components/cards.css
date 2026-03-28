@@ -1,0 +1,138 @@
+/* ─── CARDS ──────────────────────────────────────────────────────────────── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+}
+.card-sm { padding: 13px; }
+.card-hover { transition: border-color .15s, transform .15s; }
+.card-hover:hover { border-color: rgba(91,192,235,.25); transform: translateY(-1px); }
+
+/* ─── STAT CARD ─────────────────────────────────────────────────────────── */
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  display: flex; align-items: center; gap: 14px;
+}
+.stat-ico {
+  width: 44px; height: 44px; border-radius: 11px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.stat-val { font-size: 26px; font-weight: 800; font-family: var(--disp); line-height: 1; }
+.stat-lbl { font-size: 11px; color: var(--t2); margin-top: 3px; font-weight: 500; }
+
+/* ─── BADGES ─────────────────────────────────────────────────────────────── */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 9px; border-radius: 6px;
+  font-size: 10.5px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: .4px;
+}
+.bd-danger  { background: rgba(232,72,85,.12);  color: var(--red); }
+.bd-warning { background: rgba(244,163,90,.12); color: var(--orange); }
+.bd-info    { background: rgba(91,192,235,.12); color: var(--blue); }
+.bd-success { background: rgba(0,214,143,.12);  color: var(--green); }
+.bd-purple  { background: rgba(155,114,207,.12);color: var(--purple); }
+.bd-yellow  { background: rgba(247,197,65,.12); color: var(--yellow); }
+.bd-neutral { background: rgba(126,142,166,.1); color: var(--t3); }
+
+/* ─── EMPTY STATE ────────────────────────────────────────────────────────── */
+.empty-state {
+  text-align: center; padding: 48px 24px; color: var(--t3);
+}
+.empty-state i { font-size: 40px; display: block; margin-bottom: 14px; opacity: .35; }
+.empty-state p { font-size: 13px; }
+
+/* ─── EMPTY STATE (shorthand alias) ─────────────────────────────────────── */
+.empty { text-align: center; padding: 40px 24px; color: var(--t3); }
+.empty i { font-size: 36px; display: block; margin-bottom: 12px; opacity: .3; }
+.empty p { font-size: 13px; }
+
+/* ─── STAT CARD COLOR VARIANTS ───────────────────────────────────────────── */
+.sc-orange .stat-ico { background: rgba(244,163,90,.12); color: var(--orange); }
+.sc-red    .stat-ico { background: rgba(232,72,85,.12);  color: var(--red);    }
+.sc-green  .stat-ico { background: rgba(0,214,143,.12);  color: var(--green);  }
+.sc-blue   .stat-ico { background: rgba(91,192,235,.12); color: var(--blue);   }
+.sc-purple .stat-ico { background: rgba(155,114,207,.12);color: var(--purple); }
+.sc-yellow .stat-ico { background: rgba(247,197,65,.12); color: var(--yellow); }
+.sc-orange .stat-val { color: var(--orange); }
+.sc-red    .stat-val { color: var(--red);    }
+.sc-green  .stat-val { color: var(--green);  }
+.sc-blue   .stat-val { color: var(--blue);   }
+.sc-purple .stat-val { color: var(--purple); }
+.sc-yellow .stat-val { color: var(--yellow); }
+
+/* ─── VULN TAGS ───────────────────────────────────────────────────────────── */
+.vuln-tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; background: rgba(155,114,207,.1); color: var(--purple); margin: 2px; }
+
+/* ─── SUM PILLS ───────────────────────────────────────────────────────────── */
+.sum-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; cursor: pointer; }
+
+/* ─── CAPACITY BAR ────────────────────────────────────────────────────────── */
+.cap-track { flex: 1; height: 8px; background: var(--bg-el); border-radius: 4px; overflow: hidden; }
+.cap-fill  { height: 100%; border-radius: 4px; transition: width .4s; }
+
+/* ─── ALERT CARD ─────────────────────────────────────────────────────────── */
+.alert-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; position: relative; margin-bottom: 9px; }
+.alert-card-danger  { background: rgba(232,72,85,.05); border-color: rgba(232,72,85,.15); }
+.alert-card-warning { background: rgba(244,163,90,.05); border-color: rgba(244,163,90,.15); }
+.alert-card-advisory { background: rgba(91,192,235,.05); border-color: rgba(91,192,235,.15); }
+
+/* ─── ALERT PAGE ──────────────────────────────────────────────────────────── */
+.alert-stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
+.alert-stat-card  { text-align: center; padding: 14px !important; }
+.alert-stat-val   { font-size: 28px; font-weight: 800; font-family: var(--disp); line-height: 1; }
+.alert-stat-lbl   { font-size: 10.5px; color: var(--t2); margin-top: 4px; text-transform: uppercase; letter-spacing: .5px; }
+
+.alert-quick-card { margin-bottom: 16px; }
+.alert-quick-btns { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 4px; }
+
+/* SMS info banner */
+.sms-info-banner {
+  display: flex; gap: 10px; align-items: flex-start;
+  background: rgba(91,192,235,.06); border: 1px solid rgba(91,192,235,.15);
+  border-radius: 10px; padding: 11px 14px; margin-bottom: 18px;
+  font-size: 12px; color: var(--t2); line-height: 1.6;
+}
+.sms-info-banner > i { color: var(--blue); font-size: 15px; margin-top: 1px; flex-shrink: 0; }
+.sms-link { color: var(--blue); text-decoration: none; }
+.sms-link:hover { text-decoration: underline; }
+
+/* Alert history list */
+.alert-list { display: flex; flex-direction: column; gap: 9px; }
+.alert-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; position: relative; }
+.alert-card-danger   { background: rgba(232,72,85,.05);  border-color: rgba(232,72,85,.15); }
+.alert-card-warning  { background: rgba(244,163,90,.05); border-color: rgba(244,163,90,.15); }
+.alert-card-advisory { background: rgba(91,192,235,.05); border-color: rgba(91,192,235,.15); }
+.alert-card-inner { display: flex; align-items: flex-start; gap: 11px; padding-right: 36px; }
+.alert-card-icon  { margin-top: 2px; font-size: 14px; }
+.alert-card-body  { flex: 1; }
+.alert-card-top   { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 5px; }
+.alert-card-title { font-size: 13px; font-weight: 700; }
+.alert-card-zone  { font-size: 11px; color: var(--t3); }
+.alert-card-msg   { font-size: 13px; color: var(--t2); line-height: 1.5; }
+.alert-card-meta  { display: flex; gap: 12px; flex-wrap: wrap; font-size: 11px; color: var(--t3); margin-top: 7px; }
+.alert-card-meta span { display: flex; align-items: center; gap: 4px; }
+.alert-del-btn {
+  position: absolute; top: 12px; right: 12px;
+  background: rgba(232,72,85,.1); color: var(--red);
+  border: 1px solid rgba(232,72,85,.22); border-radius: 6px;
+  padding: 4px 9px; font-size: 12px; cursor: pointer;
+}
+.alert-del-btn:hover { background: rgba(232,72,85,.2); }
+
+/* Alert sent success screen */
+.alert-sent-screen { text-align: center; padding: 32px 0; }
+.alert-sent-icon   { font-size: 54px; color: var(--green); display: block; margin-bottom: 14px; }
+.alert-sent-screen h3 { margin-bottom: 6px; font-size: 18px; }
+.alert-sent-screen p  { color: var(--t2); font-size: 13px; margin-bottom: 12px; }
+.sms-ok-pill   { display: inline-flex; align-items: center; gap: 6px; background: rgba(0,214,143,.1); color: var(--green); border: 1px solid rgba(0,214,143,.2); border-radius: 20px; padding: 5px 14px; font-size: 12px; font-weight: 600; }
+.sms-fail-pill { display: inline-flex; align-items: center; gap: 6px; background: rgba(232,72,85,.1); color: var(--red); border: 1px solid rgba(232,72,85,.2); border-radius: 20px; padding: 5px 14px; font-size: 12px; font-weight: 600; }
+.sms-demo-pill { display: inline-flex; align-items: center; gap: 6px; background: rgba(91,192,235,.1); color: var(--blue); border: 1px solid rgba(91,192,235,.2); border-radius: 20px; padding: 5px 14px; font-size: 12px; font-weight: 600; margin-top: 8px; }
+
+/* SMS hint text */
+.sms-hint { font-size: 11px; color: var(--t3); margin-top: 5px; line-height: 1.5; }

@@ -1,0 +1,86 @@
+/* ─── FORM CONTROLS ──────────────────────────────────────────────────────── */
+.form-control {
+  width: 100%; padding: 9px 13px;
+  background: var(--bg-inp); border: 1px solid var(--border);
+  border-radius: 9px; color: var(--t1); font-size: 13px;
+  font-family: var(--font); transition: border-color .15s, background .15s;
+}
+.form-control:focus { outline: none; border-color: var(--blue); background: var(--bg-card); }
+.form-control::placeholder { color: var(--t3); }
+textarea.form-control { resize: vertical; min-height: 75px; }
+select.form-control { cursor: pointer; }
+
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-label {
+  font-size: 11px; font-weight: 700; color: var(--t2);
+  text-transform: uppercase; letter-spacing: .5px;
+}
+
+.form-grid   { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+.form-grid .full { grid-column: span 2; }
+
+/* ─── SEARCH INPUT ───────────────────────────────────────────────────────── */
+.search-wrap { position: relative; }
+.search-wrap i { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--t3); font-size: 12px; pointer-events: none; }
+.search-inp  { padding-left: 32px !important; }
+
+/* ─── MODAL ──────────────────────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.65);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 2000; backdrop-filter: blur(3px);
+  animation: fadeIn .15s ease;
+}
+.modal {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 26px;
+  width: 92%; max-width: 580px; max-height: 90vh; overflow-y: auto;
+  box-shadow: var(--shadow); animation: slideUp .18s ease;
+}
+.modal-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 18px;
+}
+.modal-hdr h3 { font-size: 16px; font-weight: 800; }
+.modal-close {
+  background: none; border: none; color: var(--t2); font-size: 17px;
+  cursor: pointer; padding: 4px; border-radius: 6px; transition: color .15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.modal-close:hover { color: var(--red); }
+.modal-foot { display: flex; gap: 9px; justify-content: flex-end; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+/* ─── CLASS ALIASES (shorthand used in pages) ────────────────────────────── */
+/* Aliases for form-control */
+.form-ctrl { width: 100%; padding: 9px 13px; background: var(--bg-inp); border: 1px solid var(--border); border-radius: 9px; color: var(--t1); font-size: 13px; font-family: var(--font); transition: border-color .15s, background .15s; }
+.form-ctrl:focus { outline: none; border-color: var(--blue); background: var(--bg-card); }
+.form-ctrl::placeholder { color: var(--t3); }
+textarea.form-ctrl { resize: vertical; min-height: 75px; }
+select.form-ctrl { cursor: pointer; }
+
+/* Aliases for form-group and form-grid */
+.form-grp { display: flex; flex-direction: column; gap: 5px; }
+.form-grp label { font-size: 11px; font-weight: 700; color: var(--t2); text-transform: uppercase; letter-spacing: .5px; }
+.form-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+.form-2 .full { grid-column: span 2; }
+.form-grp.full { grid-column: span 2; }
+
+/* Aliases for modal */
+.modal-ov { position: fixed; inset: 0; background: rgba(0,0,0,.65); display: flex; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(3px); animation: fadeIn .15s ease; }
+.modal-x { background: none; border: none; color: var(--t2); font-size: 17px; cursor: pointer; padding: 4px; border-radius: 6px; transition: color .15s; display: flex; align-items: center; justify-content: center; }
+.modal-x:hover { color: var(--red); }
+
+/* Aliases for detail grid */
+.det-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.det-item { display: flex; flex-direction: column; gap: 4px; }
+.det-item.full { grid-column: span 2; }
+.det-item > span:first-child { font-size: 10.5px; text-transform: uppercase; letter-spacing: .4px; color: var(--t3); }
+.det-item > strong { font-size: 13.5px; color: var(--t1); }
+
+/* Error message box */
+.form-err { color: var(--red); font-size: 12.5px; margin: 8px 0; background: rgba(232,72,85,.08); padding: 8px 12px; border-radius: 7px; }
+
+/* ─── CONFIRM MODAL ───────────────────────────────────────────────────────── */
+.modal-sm { max-width: 420px; }
+.confirm-msg { font-size: 13.5px; color: var(--t2); line-height: 1.7; margin-bottom: 4px; }
+.text-danger { color: var(--red); }

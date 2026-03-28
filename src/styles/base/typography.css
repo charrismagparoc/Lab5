@@ -1,0 +1,29 @@
+/* ─── BASE TYPOGRAPHY & BODY ─────────────────────────────────────────────── */
+html, body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--t1);
+  font-size: 14px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  height: 100vh;
+  overflow: hidden;
+}
+#root {
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── SCROLLBAR ─────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--bg-el); border-radius: 3px; }
+
+/* ─── ANIMATIONS ─────────────────────────────────────────────────────────── */
+@keyframes fadeIn   { from { opacity: 0 } to { opacity: 1 } }
+@keyframes slideUp  { from { opacity: 0; transform: translateY(18px) } to { opacity: 1; transform: none } }
+@keyframes spin     { to { transform: rotate(360deg) } }
+@keyframes blink    { 0%,100% { opacity: 1 } 50% { opacity: .55 } }
+@keyframes pulse    { 0%,100% { transform: scale(1) } 50% { transform: scale(1.04) } }

@@ -1,0 +1,17 @@
+/* ─── INCIDENTS PAGE ──────────────────────────────────────────────────────── */
+
+/* Incidents page uses shared utility classes from components/ and layout/.
+   Add any page-specific overrides below. */
+
+.incidents-page {
+  /* placeholder for future page-specific styles */
+}
+
+/* Status pill filter row */
+.incidents-filter-row {
+  display: flex;
+  gap: 7px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  align-items: center;
+}

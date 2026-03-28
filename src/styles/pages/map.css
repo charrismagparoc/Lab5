@@ -1,0 +1,114 @@
+/* ─── MAP PAGE ────────────────────────────────────────────────────────────── */
+
+/* Page takes full available height */
+.map-page { display: flex; flex-direction: column; height: 100%; }
+
+/* Header stats row */
+.map-hdr-stats {
+  display: flex; gap: 16px; align-items: center;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 8px 18px;
+}
+.map-hdr-stat  { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 60px; }
+.map-stat-val  { font-size: 20px; font-weight: 800; font-family: var(--disp); line-height: 1; }
+.map-stat-lbl  { font-size: 9.5px; color: var(--t3); text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; }
+.map-stat-red   { color: var(--red); }
+.map-stat-green { color: var(--green); }
+.map-stat-blue  { color: var(--blue); }
+
+/* Full-width map wrapper */
+.map-fullwrap {
+  position: relative;
+  flex: 1;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  min-height: 520px;
+  height: calc(100vh - 240px);
+}
+
+/* Leaflet canvas fills entire wrapper */
+.map-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+#leaflet-map { width: 100%; height: 100%; }
+
+/* Floating control panel */
+.map-ctrl-panel {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+.map-ctrl-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  pointer-events: all;
+}
+.map-ctrl-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 13px; border-radius: 8px;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  border: 1px solid var(--border);
+  background: rgba(19, 29, 48, 0.9);
+  color: var(--t2);
+  backdrop-filter: blur(8px);
+  transition: all .15s;
+  font-family: var(--font);
+}
+.map-ctrl-btn:hover { background: var(--bg-el); color: var(--t1); }
+.map-ctrl-btn.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+.map-ctrl-checks {
+  background: rgba(19, 29, 48, 0.88);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  backdrop-filter: blur(8px);
+  gap: 12px;
+}
+.map-check-lbl {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 12px; color: var(--t2); cursor: pointer;
+  white-space: nowrap;
+}
+.map-check-lbl input { accent-color: var(--blue); }
+
+/* ── Leaflet popup dark theme ─────────────────────────────────────────────── */
+.leaflet-popup-content-wrapper {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
+  color: var(--t1) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.5) !important;
+  font-family: var(--font) !important;
+  font-size: 12.5px !important;
+}
+.leaflet-popup-tip { background: var(--bg-card) !important; }
+.leaflet-popup-close-button { color: var(--t2) !important; }
+.leaflet-popup-close-button:hover { color: var(--red) !important; }
+
+/* ── Zone/purok labels ────────────────────────────────────────────────────── */
+.zone-label {
+  background: rgba(91,192,235,.15);
+  border: 1px solid rgba(91,192,235,.3);
+  color: var(--blue); font-size: 10px; font-weight: 800;
+  padding: 2px 8px; border-radius: 5px; white-space: nowrap;
+  text-shadow: 0 1px 3px rgba(0,0,0,.8);
+  letter-spacing: .5px;
+}
+.sub-label {
+  background: rgba(0,0,0,.55);
+  color: #fff; font-size: 9.5px; font-weight: 600;
+  padding: 2px 7px; border-radius: 4px; white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0,0,0,.9);
+  border: 1px solid rgba(255,255,255,.15);
+}
