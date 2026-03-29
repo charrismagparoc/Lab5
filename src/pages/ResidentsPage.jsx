@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { ConfirmModal } from '../components/Shared'
 import { ZONES, VULNERABILITY_TAGS } from '../data/constants'
-import { useApp } from '../context/AppContext'
+import { useApp } from '../context/AppContext'   
+import '../styles/pages/residents.css'  
 
 const STA_CLS = { Safe:'bd-success', Evacuated:'bd-info', Unaccounted:'bd-danger' }
 
@@ -55,10 +56,12 @@ export default function ResidentsPage() {
           <div className="page-title">Resident Management</div>
           <div className="page-sub">Database with vulnerability tagging and evacuation tracking</div>
         </div>
-        
+        <button className="btn btn-primary" onClick={openAdd} type="button">
+          <i className="fa-solid fa-user-plus"></i> Add Resident
+        </button>
       </div>
 
-      <div className="sum-pills">
+      <div className="sum-pills">  
         {[['Safe','bd-success'],['Evacuated','bd-info'],['Unaccounted','bd-danger']].map(([s,c]) => (
           <span key={s} className={'badge ' + c} style={{ cursor:'pointer' }}
             onClick={() => setFilterStatus(filterStatus === s ? 'All' : s)}>

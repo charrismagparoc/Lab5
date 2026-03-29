@@ -1,14 +1,12 @@
-// ─── useLocalData.js ──────────────────────────────────────────────────────────
-// Supabase-backed data store. All CRUD goes directly to the database.
-
 import { useState, useCallback, useEffect } from 'react'
-import { supabase } from '../lib/supabase'
 import { ZONE_COORDS } from '../data/zones'
+
+const API_URL = 'http://localhost:8000/api'
 
 let _id = 1000
 const nextId = () => String(++_id)
 
-// ── Field normalizers (DB snake_case → JS camelCase) ─────────────────────────
+
 const normInc  = r => ({ ...r, dateReported: r.date_reported, createdAt: r.created_at })
 const normEvac = r => ({ ...r, facilitiesAvailable: r.facilities_available || [], contactPerson: r.contact_person })
 const normRes  = r => ({
@@ -31,10 +29,22 @@ const normAct  = r => ({
   type:      r.type || 'System',
 })
 
-const withTimeout = (p, ms = 10000) => Promise.race([
-  p,
-  new Promise((_, r) => setTimeout(() => r(new Error('DB timeout')), ms))
-])
+const now = () => new Date().toISOString()
+
+
+async function api(path, options = {}) {
+  const res = await fetch(`${API_URL}${path}`, {
+    headers: { 'Content-Type': 'application/json' },
+    ...options,
+    body: options.body ? JSON.stringify(options.body) : undefined,
+  })
+  if (!res.ok) {
+    const err = await res.text()
+    throw new Error(`API error ${res.status}: ${err}`)
+  }
+  if (res.status === 204) return null
+  return res.json()
+}
 
 function zoneGPS(zone, spread = 0.005) {
   const base = ZONE_COORDS[zone] || { lat: 8.492, lng: 124.650 }
@@ -44,9 +54,7 @@ function zoneGPS(zone, spread = 0.005) {
   }
 }
 
-const now = () => new Date().toISOString()
 
-// ─────────────────────────────────────────────────────────────────────────────
 export function useLocalData() {
   const [incidents,   setIncidents]   = useState([])
   const [alerts,      setAlerts]      = useState([])
@@ -56,37 +64,36 @@ export function useLocalData() {
   const [users,       setUsers]       = useState([])
   const [activityLog, setActivityLog] = useState([])
 
-  // ── Load all tables from Supabase ────────────────────────────────────────
+  
   const loadAll = useCallback(async () => {
     try {
       const results = await Promise.allSettled([
-        withTimeout(supabase.from('incidents').select('*').order('created_at', { ascending: false })),
-        withTimeout(supabase.from('alerts').select('*').order('created_at', { ascending: false })),
-        withTimeout(supabase.from('evac_centers').select('*')),
-        withTimeout(supabase.from('residents').select('*').order('created_at', { ascending: false })),
-        withTimeout(supabase.from('resources').select('*')),
-        withTimeout(supabase.from('users').select('*')),
-        withTimeout(supabase.from('activity_log').select('*').order('created_at', { ascending: false }).limit(500)),
+        api('/incidents/'),
+        api('/alerts/'),
+        api('/evacuation-centers/'),
+        api('/residents/'),
+        api('/resources/'),
+        api('/users/'),
+        api('/activity-log/'),
       ])
 
       const [incR, alR, ecR, resR, rsR, usR, alogR] = results
 
-      const inc  = incR.status  === 'fulfilled' ? (incR.value.data  || []) : []
-      const al   = alR.status   === 'fulfilled' ? (alR.value.data   || []) : []
-      const ec   = ecR.status   === 'fulfilled' ? (ecR.value.data   || []) : []
-      const res  = resR.status  === 'fulfilled' ? (resR.value.data  || []) : []
-      const rs   = rsR.status   === 'fulfilled' ? (rsR.value.data   || []) : []
-      let   us   = usR.status   === 'fulfilled' ? (usR.value.data   || []) : []
-      const alog = alogR.status === 'fulfilled' ? (alogR.value.data || []) : []
+      const inc  = incR.status  === 'fulfilled' ? (incR.value  || []) : []
+      const al   = alR.status   === 'fulfilled' ? (alR.value   || []) : []
+      const ec   = ecR.status   === 'fulfilled' ? (ecR.value   || []) : []
+      const res  = resR.status  === 'fulfilled' ? (resR.value  || []) : []
+      const rs   = rsR.status   === 'fulfilled' ? (rsR.value   || []) : []
+      let   us   = usR.status   === 'fulfilled' ? (usR.value   || []) : []
+      const alog = alogR.status === 'fulfilled' ? (alogR.value || []) : []
 
-      // if the users table is legitimately empty, seed default accounts
+      
       if (us.length === 0) {
-        const { data: seeded, error: seedErr } = await supabase.from('users').insert([
-          { name: 'Admin User',    email: 'admin@kauswagan.gov.ph',  password: 'admin123',  role: 'Admin', status: 'Active' },
-          { name: 'Staff Officer', email: 'staff@kauswagan.gov.ph',  password: 'staff123',  role: 'Staff', status: 'Active' },
-        ]).select()
-        if (seedErr) throw seedErr
-        us = seeded || []
+        const seeded = await Promise.all([
+          api('/users/', { method: 'POST', body: { name: 'Admin User',    email: 'admin@kauswagan.gov.ph',  password: 'admin123',  role: 'Admin', status: 'Active' } }),
+          api('/users/', { method: 'POST', body: { name: 'Staff Officer', email: 'staff@kauswagan.gov.ph',  password: 'staff123',  role: 'Staff', status: 'Active' } }),
+        ])
+        us = seeded.filter(Boolean)
       }
 
       setIncidents(inc.map(normInc))
@@ -97,15 +104,19 @@ export function useLocalData() {
       setUsers(us.map(normUser))
       setActivityLog(alog.map(normAct))
     } catch (e) {
-      console.error('Database loadAll failed, cannot fall back to local data:', e)
-      // optionally you could alert the user or redirect to an error page
-      throw e // bubble up so the app knows connection is broken
+      console.error('Django API loadAll failed:', e)
     }
   }, [])
 
   useEffect(() => { loadAll() }, [loadAll])
 
-  // ── Activity log helper ───────────────────────────────────────────────────
+  
+  const fetchAlerts = useCallback(async () => {
+    const data = await api('/alerts/')
+    if (data) setAlerts(data)
+  }, [])
+
+  
   const log = useCallback((action, type, userName = 'System', urgent = false) => {
     const localEntry = {
       id:        nextId(),
@@ -117,13 +128,13 @@ export function useLocalData() {
     }
     setActivityLog(prev => [localEntry, ...prev].slice(0, 500))
 
-    supabase.from('activity_log')
-      .insert([{ action, type, user_name: userName, urgent }])
-      .then(({ error }) => { if (error) console.warn('activity_log insert error:', error) })
-      .catch(e => console.warn('activity_log error:', e))
+    api('/activity-log/', {
+      method: 'POST',
+      body: { action, type, user_name: userName, urgent },
+    }).catch(e => console.warn('activity_log error:', e))
   }, [])
 
-  // ── INCIDENTS ──────────────────────────────────────────────────────────────
+  
   const addIncident = useCallback(async (data, userName = 'System') => {
     const gps = zoneGPS(data.zone)
     const payload = {
@@ -138,15 +149,13 @@ export function useLocalData() {
       lat:         data.lat || gps.lat,
       lng:         data.lng || gps.lng,
     }
-    const { data: record, error } = await supabase.from('incidents').insert([payload]).select().single()
-    if (error) throw error
+    const record = await api('/incidents/', { method: 'POST', body: payload })
     setIncidents(prev => [normInc(record), ...prev])
     log(`Incident reported: ${data.type} in ${data.zone}`, 'Incident', userName, data.severity === 'High')
     return record
   }, [log])
 
   const updateIncident = useCallback(async (id, data, userName = 'System') => {
-    // only send fields that actually exist in the database
     const payload = {
       type:        data.type,
       zone:        data.zone,
@@ -159,63 +168,55 @@ export function useLocalData() {
       lat:         data.lat,
       lng:         data.lng,
     }
-    const { data: record, error } = await supabase.from('incidents').update(payload).eq('id', id).select().single()
-    if (error) throw error
+    const record = await api(`/incidents/${id}/`, { method: 'PATCH', body: payload })
     setIncidents(prev => prev.map(r => r.id === id ? normInc(record) : r))
     log(`Incident updated: ${data.type || ''} ${data.zone || ''}`.trim(), 'Incident', userName)
     return record
   }, [log])
 
   const deleteIncident = useCallback(async (id, label = '', userName = 'System') => {
-    const { error } = await supabase.from('incidents').delete().eq('id', id)
-    if (error) throw error
+    await api(`/incidents/${id}/`, { method: 'DELETE' })
     setIncidents(prev => prev.filter(r => r.id !== id))
     log(`Incident deleted: ${label}`, 'Incident', userName, true)
   }, [log])
 
-  // ── ALERTS ─────────────────────────────────────────────────────────────────
+  
   const addAlert = useCallback(async (data, userName = 'System') => {
     const payload = {
-      title:            `${data.level} Alert — ${data.zone}`,
-      message:          data.message,
-      level:            data.level,
-      zone:             data.zone,
-      channel:          data.channel || 'Web',
-      recipients_count: data.zone === 'All Zones' ? 1284 : Math.floor(Math.random() * 300 + 150),
-      sent_by:          userName,
+      title:    data.title,
+      message:  data.message || '',
+      severity: data.severity || 'Medium',
+      zone:     data.zone || 'All',
+      status:   data.status || 'Active',
     }
-    const { data: record, error } = await supabase.from('alerts').insert([payload]).select().single()
-    if (error) throw error
+    const record = await api('/alerts/', { method: 'POST', body: payload })
     setAlerts(prev => [record, ...prev])
-    log(`${data.level} alert sent to ${data.zone}`, 'Alert', userName, data.level === 'Danger')
+    log(`Alert sent: ${data.title}`, 'Alert', userName, data.severity === 'High')
     return record
   }, [log])
 
-  const deleteAlert = useCallback(async (id, userName = 'System') => {
-    const { error } = await supabase.from('alerts').delete().eq('id', id)
-    if (error) throw error
+  const deleteAlert = useCallback(async (id, label = '', userName = 'System') => {
+    await api(`/alerts/${id}/`, { method: 'DELETE' })
     setAlerts(prev => prev.filter(r => r.id !== id))
-    log('Alert deleted', 'Alert', userName)
+    log(`Alert deleted: ${label}`, 'Alert', userName, true)
   }, [log])
 
-  // ── EVAC CENTERS ───────────────────────────────────────────────────────────
+  
   const addEvacCenter = useCallback(async (data, userName = 'System') => {
-    const gps = zoneGPS(data.zone, 0.003)
     const payload = {
       name:                 data.name,
       zone:                 data.zone,
       address:              data.address || '',
-      capacity:             parseInt(data.capacity) || 100,
-      occupancy:            parseInt(data.occupancy) || 0,
-      status:               data.status || 'Open',
+      capacity:             parseInt(data.capacity) || 0,
+      current_occupancy:    parseInt(data.currentOccupancy) || 0,
+      status:               data.status || 'Available',
       facilities_available: data.facilitiesAvailable || [],
       contact_person:       data.contactPerson || '',
-      contact:              data.contact || '',
-      lat:                  data.lat || gps.lat,
-      lng:                  data.lng || gps.lng,
+      contact_number:       data.contactNumber || '',
+      lat:                  data.lat,
+      lng:                  data.lng,
     }
-    const { data: record, error } = await supabase.from('evac_centers').insert([payload]).select().single()
-    if (error) throw error
+    const record = await api('/evacuation-centers/', { method: 'POST', body: payload })
     setEvacCenters(prev => [...prev, normEvac(record)])
     log(`Evacuation center added: ${data.name}`, 'Evacuation', userName)
     return record
@@ -225,29 +226,27 @@ export function useLocalData() {
     const payload = {
       name:                 data.name,
       zone:                 data.zone,
-      address:              data.address,
-      capacity:             parseInt(data.capacity) || 100,
-      occupancy:            parseInt(data.occupancy) || 0,
-      status:               data.status,
+      address:              data.address || '',
+      capacity:             parseInt(data.capacity) || 0,
+      current_occupancy:    parseInt(data.currentOccupancy) || 0,
+      status:               data.status || 'Available',
       facilities_available: data.facilitiesAvailable || [],
       contact_person:       data.contactPerson || '',
-      contact:              data.contact || '',
+      contact_number:       data.contactNumber || '',
     }
-    const { data: record, error } = await supabase.from('evac_centers').update(payload).eq('id', id).select().single()
-    if (error) throw error
+    const record = await api(`/evacuation-centers/${id}/`, { method: 'PATCH', body: payload })
     setEvacCenters(prev => prev.map(r => r.id === id ? normEvac(record) : r))
     log(`Evacuation center updated: ${data.name}`, 'Evacuation', userName)
     return record
   }, [log])
 
   const deleteEvacCenter = useCallback(async (id, name = '', userName = 'System') => {
-    const { error } = await supabase.from('evac_centers').delete().eq('id', id)
-    if (error) throw error
+    await api(`/evacuation-centers/${id}/`, { method: 'DELETE' })
     setEvacCenters(prev => prev.filter(r => r.id !== id))
     log(`Evacuation center deleted: ${name}`, 'Evacuation', userName, true)
   }, [log])
 
-  // ── RESIDENTS ──────────────────────────────────────────────────────────────
+  
   const addResident = useCallback(async (data, userName = 'System') => {
     const gps = zoneGPS(data.zone, 0.003)
     const payload = {
@@ -264,8 +263,7 @@ export function useLocalData() {
       added_by:           userName,
       source:             data.source || 'web',
     }
-    const { data: record, error } = await supabase.from('residents').insert([payload]).select().single()
-    if (error) throw error
+    const record = await api('/residents/', { method: 'POST', body: payload })
     setResidents(prev => [normRes(record), ...prev])
     log(`Resident added: ${data.name} (${data.zone})`, 'Resident', userName)
     return record
@@ -282,21 +280,19 @@ export function useLocalData() {
       vulnerability_tags: data.vulnerabilityTags || [],
       notes:              data.notes || '',
     }
-    const { data: record, error } = await supabase.from('residents').update(payload).eq('id', id).select().single()
-    if (error) throw error
+    const record = await api(`/residents/${id}/`, { method: 'PATCH', body: payload })
     setResidents(prev => prev.map(r => r.id === id ? normRes(record) : r))
     log(`Resident updated: ${data.name} (${data.zone})`, 'Resident', userName)
     return record
   }, [log])
 
   const deleteResident = useCallback(async (id, name = '', userName = 'System') => {
-    const { error } = await supabase.from('residents').delete().eq('id', id)
-    if (error) throw error
+    await api(`/residents/${id}/`, { method: 'DELETE' })
     setResidents(prev => prev.filter(r => r.id !== id))
     log(`Resident deleted: ${name}`, 'Resident', userName, true)
   }, [log])
 
-  // ── RESOURCES ──────────────────────────────────────────────────────────────
+  
   const addResource = useCallback(async (data, userName = 'System') => {
     const payload = {
       name:      data.name,
@@ -308,8 +304,7 @@ export function useLocalData() {
       status:    data.status || 'Available',
       notes:     data.notes || '',
     }
-    const { data: record, error } = await supabase.from('resources').insert([payload]).select().single()
-    if (error) throw error
+    const record = await api('/resources/', { method: 'POST', body: payload })
     setResources(prev => [...prev, record])
     log(`Resource added: ${data.name}`, 'Resource', userName)
     return record
@@ -326,21 +321,19 @@ export function useLocalData() {
       status:    data.status || 'Available',
       notes:     data.notes || '',
     }
-    const { data: record, error } = await supabase.from('resources').update(payload).eq('id', id).select().single()
-    if (error) throw error
+    const record = await api(`/resources/${id}/`, { method: 'PATCH', body: payload })
     setResources(prev => prev.map(r => r.id === id ? record : r))
     log(`Resource updated: ${data.name || ''}`, 'Resource', userName)
     return record
   }, [log])
 
   const deleteResource = useCallback(async (id, name = '', userName = 'System') => {
-    const { error } = await supabase.from('resources').delete().eq('id', id)
-    if (error) throw error
+    await api(`/resources/${id}/`, { method: 'DELETE' })
     setResources(prev => prev.filter(r => r.id !== id))
     log(`Resource deleted: ${name}`, 'Resource', userName, true)
   }, [log])
 
-  // ── USERS ──────────────────────────────────────────────────────────────────
+  
   const addUser = useCallback(async (data, userName = 'System') => {
     const payload = {
       name:     data.name,
@@ -349,8 +342,7 @@ export function useLocalData() {
       role:     data.role || 'Staff',
       status:   'Active',
     }
-    const { data: record, error } = await supabase.from('users').insert([payload]).select().single()
-    if (error) throw error
+    const record = await api('/users/', { method: 'POST', body: payload })
     setUsers(prev => [...prev, normUser(record)])
     log(`User account created: ${data.name}`, 'User', userName)
     return record
@@ -358,58 +350,45 @@ export function useLocalData() {
 
   const updateUser = useCallback(async (id, data, userName = 'System') => {
     const payload = {
-      name:   data.name,
-      email:  data.email,
+      name:     data.name,
+      email:    data.email,
       password: data.password,
-      role:   data.role,
-      status: data.status,
+      role:     data.role,
+      status:   data.status,
     }
-    const { data: record, error } = await supabase.from('users').update(payload).eq('id', id).select().single()
-    if (error) throw error
+    const record = await api(`/users/${id}/`, { method: 'PATCH', body: payload })
     setUsers(prev => prev.map(r => r.id === id ? normUser(record) : r))
     log(`User updated: ${data.name || ''}`, 'User', userName)
     return record
   }, [log])
 
   const deleteUser = useCallback(async (id, name = '', userName = 'System') => {
-    const { error } = await supabase.from('users').delete().eq('id', id)
-    if (error) throw error
+    await api(`/users/${id}/`, { method: 'DELETE' })
     setUsers(prev => prev.filter(r => r.id !== id))
     log(`User deleted: ${name}`, 'User', userName, true)
   }, [log])
 
-  // ── LOGIN ──────────────────────────────────────────────────────────────────
+  
   const loginUser = useCallback(async (email, password) => {
     try {
-      const { data: found, error } = await withTimeout(
-        supabase.from('users')
-          .select('*')
-          .ilike('email', email.trim())
-          .eq('password', password)
-          .eq('status', 'Active')
-          .single(),
-        8000
-      )
-      if (error || !found) return { success: false, error: 'Invalid email or password.' }
-      await supabase.from('users').update({ last_login: now() }).eq('id', found.id)
-      log(`User signed in: ${found.name}`, 'Auth', found.name)
-      return { success: true, user: { id: found.id, name: found.name, email: found.email, role: found.role } }
+      const data = await api('/auth/login/', {
+        method: 'POST',
+        body: { email: email.trim(), password },
+      })
+      if (!data || !data.user) return { success: false, error: 'Invalid email or password.' }
+      log(`User signed in: ${data.user.name}`, 'Auth', data.user.name)
+      return { success: true, user: data.user }
     } catch (e) {
       console.warn('loginUser error:', e)
-      const local = users.find(u =>
-        u.email?.toLowerCase() === email.toLowerCase() &&
-        u.password === password &&
-        u.status === 'Active'
-      )
-      if (local) return { success: true, user: { id: local.id, name: local.name, email: local.email, role: local.role } }
-      return { success: false, error: 'Unable to reach database. Check your connection.' }
+      return { success: false, error: 'Unable to reach server. Make sure Django is running.' }
     }
-  }, [log, users])
+  }, [log])
 
   return {
     loading: false, dbError: null, refresh: loadAll,
     incidents, alerts, evacCenters, residents, resources, users, activityLog,
     loginUser,
+    fetchAlerts,
     addIncident, updateIncident, deleteIncident,
     addAlert, deleteAlert,
     addEvacCenter, updateEvacCenter, deleteEvacCenter,
