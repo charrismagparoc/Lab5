@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { ZONE_COORDS } from '../data/zones'
 
-const API_URL = 'http://localhost:8000/api'
+const API_URL = 'http://localhost:8000/api';
 
 let _id = 1000
 const nextId = () => String(++_id)
@@ -183,15 +183,16 @@ export function useLocalData() {
   
   const addAlert = useCallback(async (data, userName = 'System') => {
     const payload = {
-      title:    data.title,
-      message:  data.message || '',
-      severity: data.severity || 'Medium',
-      zone:     data.zone || 'All',
-      status:   data.status || 'Active',
+      title:            data.title,
+      message:          data.message || '',
+      level:            data.level || 'Advisory',
+      zone:             data.zone || 'All Zones',
+      recipients_count: data.smsCount || data.recipients_count || 0,
+      sent_by:          userName,
     }
     const record = await api('/alerts/', { method: 'POST', body: payload })
     setAlerts(prev => [record, ...prev])
-    log(`Alert sent: ${data.title}`, 'Alert', userName, data.severity === 'High')
+    log(`Alert sent: ${data.title}`, 'Alert', userName, data.level === 'Danger')
     return record
   }, [log])
 
